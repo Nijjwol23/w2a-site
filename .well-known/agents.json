@@ -2,34 +2,114 @@
   "w2a": "1.0",
   "site": {
     "name": "W2A Protocol",
-    "type": "saas",
-    "language": "en"
+    "type": "api",
+    "language": "en",
+    "description": "The open standard that makes any website agent-readable. Spec, validator, and tooling for the Web2Agent Protocol."
   },
   "capabilities": [
     {
       "id": "get_spec",
-      "intent": "retrieve the W2A protocol specification",
-      "action": "GET /spec/v0.1",
-      "input": {},
-      "output": { "spec": "object", "version": "string" },
-      "auth": "none"
+      "intent": "retrieve the full W2A protocol specification for a given version",
+      "action": "GET /spec/:version",
+      "input": {
+        "version": "string?"
+      },
+      "output": {
+        "version": "string",
+        "status": "string",
+        "content": "string",
+        "published_at": "string"
+      },
+      "auth": "none",
+      "description": "Returns the full spec document. Omit version to get the latest. e.g. GET /spec/v0.1"
     },
     {
       "id": "validate_manifest",
-      "intent": "validate an agents.json file against the W2A spec",
+      "intent": "validate an agents.json manifest against the W2A spec and return any errors",
       "action": "POST /api/validate",
-      "input": { "manifest": "object" },
-      "output": { "valid": "bool", "errors": "string[]" },
-      "auth": "none"
+      "input": {
+        "manifest": "object"
+      },
+      "output": {
+        "valid": "bool",
+        "version": "string",
+        "errors": "object[]",
+        "warnings": "object[]"
+      },
+      "auth": "none",
+      "description": "Validates a W2A manifest object. Returns structured errors with field paths and fix suggestions."
+    },
+    {
+      "id": "generate_manifest",
+      "intent": "generate a W2A agents.json manifest from a website URL by analysing its existing signals",
+      "action": "POST /api/generate",
+      "input": {
+        "url": "string",
+        "site_type": "string?"
+      },
+      "output": {
+        "manifest": "object",
+        "confidence": "float",
+        "signals_found": "string[]"
+      },
+      "auth": "none",
+      "description": "Crawls the target URL and reads Schema.org JSON-LD, Open Graph, sitemap, and HTML forms to produce a draft manifest. Returns confidence score 0-1."
+    },
+    {
+      "id": "get_examples",
+      "intent": "retrieve example agents.json manifests for common site types",
+      "action": "GET /api/examples",
+      "input": {
+        "type": "string?"
+      },
+      "output": {
+        "examples": "object[]"
+      },
+      "auth": "none",
+      "description": "Returns example manifests. Filter by type: ecommerce, blog, saas, marketplace, media, api. Omit for all."
+    },
+    {
+      "id": "get_schema",
+      "intent": "retrieve the JSON Schema definition for validating W2A manifests programmatically",
+      "action": "GET /api/schema",
+      "input": {
+        "version": "string?"
+      },
+      "output": {
+        "schema": "object",
+        "version": "string"
+      },
+      "auth": "none",
+      "description": "Returns the JSON Schema (Draft 7) for the W2A manifest format. Use this to validate manifests in your own tooling."
+    },
+    {
+      "id": "check_site",
+      "intent": "check whether a website already serves a valid W2A manifest",
+      "action": "GET /api/check",
+      "input": {
+        "url": "string"
+      },
+      "output": {
+        "w2a_enabled": "bool",
+        "manifest_url": "string?",
+        "valid": "bool?",
+        "version": "string?",
+        "capability_count": "int?",
+        "errors": "string[]?"
+      },
+      "auth": "none",
+      "description": "Fetches /.well-known/agents.json from the target domain and reports whether it exists and is valid."
     }
   ],
   "policies": {
     "rate_limit": "60/min",
-    "allowed_agents": ["*"]
+    "allowed_agents": ["*"],
+    "require_identity": false
   },
   "a2a_profile": {
-    "name": "W2A Protocol Agent",
+    "name": "W2A Protocol",
     "url": "https://w2a-protocol.org/.well-known/agents.json",
-    "version": "1.0"
+    "version": "1.0",
+    "description": "Official agent interface for the W2A Protocol — spec retrieval, manifest validation, and site checking."
   }
 }
