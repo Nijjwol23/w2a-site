@@ -112,6 +112,8 @@ function mapOpenApiType(schema) {
 
 function skillIdFromPath(method, path) {
   const clean = path
+    .replace(/[{:][^}/]+}/g, 'by_id')
+    .replace(/:[a-z_]+/gi, 'by_id')
     .replace(/\{[^}]+\}/g, 'by_id')
     .replace(/^\/+/, '')
     .replace(/[^a-z0-9]+/gi, '_')
@@ -120,12 +122,19 @@ function skillIdFromPath(method, path) {
   return `${method.toLowerCase()}_${clean}`.slice(0, 40);
 }
 
+function toSentenceCase(str) {
+  if (!str) return str;
+  const s = str.trim();
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
+    .replace(/\b(id|api|url|http|json|xml|oauth|jwt)\b/gi, m => m.toUpperCase());
+}
+
 function intentFromOperation(method, path, operation) {
-  if (operation.summary) return operation.summary;
-  if (operation.description) return operation.description.split('.')[0];
+  const raw = operation.summary || (operation.description ? operation.description.split('.')[0] : null);
+  if (raw) return toSentenceCase(raw);
   const action = { get: 'retrieve', post: 'create', put: 'update', patch: 'update', delete: 'delete' }[method] || method;
   const resource = path.split('/').filter(p => p && !p.startsWith('{')).pop() || 'resource';
-  return `${action} ${resource.replace(/_/g, ' ')}`;
+  return toSentenceCase(`${action} ${resource.replace(/_/g, ' ')}`);
 }
 
 function authFromSecurity(operation, globalSecurity, securitySchemes) {
@@ -193,7 +202,7 @@ function skillsFromOpenApi(spec) {
       const skill = {
         id,
         intent: intent.slice(0, 120),
-        action: `${method.toUpperCase()} ${path}`,
+        action: `${method.toUpperCase()} ${path.replace(/\{([^}]+)\}/g, ':$1')}`,
         auth
       };
       if (Object.keys(input).length) skill.input = input;
