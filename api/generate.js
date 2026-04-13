@@ -29,7 +29,8 @@ function detectSiteType(html, url, declared) {
     const score = signals.filter(s => text.includes(s)).length;
     if (score > bestScore) { bestScore = score; best = type; }
   }
-  return best;
+  // Require score >= 3 to avoid false positives from marketing copy
+  return bestScore >= 3 ? best : 'other';
 }
 
 function extractJsonLd(html) {
@@ -387,7 +388,7 @@ export default async function handler(req, res) {
   const conf = calcConfidence(allSignals, jsonLd, og, forms, openApiFound);
 
   // Low signal detection
-  const isLowSignal = !openApiFound && jsonLd.length === 0 && forms.length === 0 && skills.length <= 1;
+  const isLowSignal = !openApiFound && jsonLd.length === 0 && forms.length === 0 && pathPatterns.length === 0;
 
   const manifest = {
     w2a: '1.0',
@@ -401,11 +402,13 @@ export default async function handler(req, res) {
     policies: { rate_limit: '60/min', allowed_agents: ['*'] }
   };
 
-  const note = isLowSignal
+  const noteText = isLowSignal
     ? lowSignalNote(hostname, OPENAPI_PATHS)
     : openApiFound
       ? `Generated from OpenAPI spec at ${origin}${openApiPath}. Review and adjust skill descriptions before deploying.`
       : 'Generated from page signals. Review each skill and adjust actions to match your actual API endpoints before deploying.';
+  const confidencePct = Math.round(conf * 100);
+  const note = `[Confidence: ${confidencePct}%] ${noteText}`;
 
   return res.status(200).json({
     manifest,

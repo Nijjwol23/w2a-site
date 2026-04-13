@@ -181,6 +181,7 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem;margin-top:5rem}
       <span id="gen-label">Generate agents.json</span>
     </button>
 
+    <div id="gen-note" style="display:none;margin-top:1.5rem"></div>
     <div id="gen-result" style="display:none">
       <div class="result">
         <div class="result-header">
@@ -312,6 +313,20 @@ async function generate() {
     document.getElementById('gen-result').style.display = 'block';
     document.getElementById('gen-install').style.display = 'block';
     document.getElementById('gen-label').textContent = 'Regenerate';
+
+    // Show note and confidence
+    const noteEl = document.getElementById('gen-note');
+    if (data.note) {
+      const isLow = data.low_signal;
+      const conf = Math.round((data.confidence || 0) * 100);
+      noteEl.style.display = 'block';
+      noteEl.className = 'status-card ' + (isLow ? 'invalid' : conf >= 70 ? 'valid' : 'warning');
+      noteEl.innerHTML = '<div class="status-icon">' + (isLow ? 'Low confidence — manual review needed' : conf >= 70 ? 'Good confidence — ' + conf + '%' : 'Medium confidence — ' + conf + '%') + '</div>'
+        + '<div style="font-size:13px;font-weight:300;color:var(--text2);line-height:1.7;margin-top:.5rem">' + data.note + '</div>'
+        + (data.signals_found?.length ? '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:.75rem">Signals: ' + data.signals_found.join(' · ') + '</div>' : '');
+    } else {
+      noteEl.style.display = 'none';
+    }
   } catch {
     document.getElementById('gen-label').textContent = 'Generate agents.json';
     alert('Could not reach the generation API. Make sure the API is deployed.');
