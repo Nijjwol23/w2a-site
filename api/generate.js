@@ -16,9 +16,15 @@ const OPENAPI_PATHS = [
   '/swagger.json', '/swagger.yaml',
   '/api/openapi.json', '/api/swagger.json',
   '/api-docs', '/api-docs.json',
-  '/docs/api.json', '/v1/openapi.json',
-  '/api/v1/openapi.json', '/api/v2/openapi.json',
-  '/.well-known/openapi.json'
+  '/api-docs/swagger.json',
+  '/docs/api.json', '/docs/swagger.json',
+  '/v1/openapi.json', '/v2/openapi.json', '/v3/openapi.json',
+  '/v1/swagger.json', '/v2/swagger.json', '/v3/swagger.json',
+  '/api/v1/openapi.json', '/api/v2/openapi.json', '/api/v3/openapi.json',
+  '/api/v1/swagger.json', '/api/v2/swagger.json', '/api/v3/swagger.json',
+  '/.well-known/openapi.json',
+  '/spec/openapi.json', '/schema/openapi.json',
+  '/api/schema', '/api/spec'
 ];
 
 function detectSiteType(html, url, declared) {
@@ -287,6 +293,25 @@ function lowSignalNote(hostname, openApiPaths) {
   ].join(' ');
 }
 
+
+function extractSwaggerUiSpecUrl(html, origin) {
+  // Swagger UI embeds the spec URL in JS config: url: "https://..."
+  const patterns = [
+    /SwaggerUIBundle\s*\(\s*\{[^}]*url\s*:\s*["']([^"']+)["']/i,
+    /url\s*:\s*["'](https?:\/\/[^"']+(?:openapi|swagger)[^"']*)["']/i,
+    /data-url=["']([^"']+)["']/i,
+    /"urls"\s*:\s*\[\s*\{\s*"url"\s*:\s*"([^"]+)"/i
+  ];
+  for (const re of patterns) {
+    const m = html.match(re);
+    if (m && m[1]) {
+      const url = m[1].startsWith('http') ? m[1] : origin + m[1];
+      return url;
+    }
+  }
+  return null;
+}
+
 // ── Main handler ────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
@@ -332,9 +357,18 @@ export default async function handler(req, res) {
   let openApiSpec = null;
   let openApiFound = false;
   let openApiPath = '';
-  for (const path of OPENAPI_PATHS) {
+
+  // First check if this is a Swagger UI page and extract the embedded spec URL
+  const swaggerUiUrl = html ? extractSwaggerUiSpecUrl(html, origin) : null;
+  const pathsToTry = swaggerUiUrl
+    ? [new URL(swaggerUiUrl).pathname, ...OPENAPI_PATHS]
+    : OPENAPI_PATHS;
+  if (swaggerUiUrl) fetchSignals.push(`Swagger UI detected — probing spec at ${swaggerUiUrl}`);
+
+  for (const path of pathsToTry) {
     try {
-      const r = await fetch(`${origin}${path}`, { headers, signal: AbortSignal.timeout(4000) });
+      const specUrl = path.startsWith('http') ? path : `${origin}${path}`;
+      const r = await fetch(specUrl, { headers, signal: AbortSignal.timeout(4000) });
       if (r.ok) {
         const ct = r.headers.get('content-type') || '';
         if (ct.includes('json') || ct.includes('yaml') || ct.includes('text')) {
@@ -344,7 +378,7 @@ export default async function handler(req, res) {
             if (parsed.openapi || parsed.swagger || parsed.paths) {
               openApiSpec = parsed;
               openApiFound = true;
-              openApiPath = path;
+              openApiPath = path.startsWith('http') ? new URL(path).pathname : path;
               fetchSignals.push(`OpenAPI spec found at ${path}`);
               break;
             }
@@ -371,17 +405,27 @@ export default async function handler(req, res) {
                      (titleMatch ? titleMatch[1].trim() : null) ||
                      hostname.replace(/^www\./, '').split('.')[0];
   const siteName   = rawTitle.split(/[|\-–]/)[0].trim();
-  const siteType   = detectSiteType(html, url, site_type);
+  // site_type picker only sets site.type — skills always come from OpenAPI first,
+  // falling back to HTML signals. Declared type is never used to fabricate skills.
+  const siteType = detectSiteType(html, url, site_type);
+  // For skill generation, only use declared type if no OpenAPI and no HTML signals found
+  const skillType = openApiFound ? 'api' : siteType;
 
-  // Build skills — prefer OpenAPI if found
+  // Build skills — OpenAPI always wins, HTML signals as fallback
   let skills, skillSignals;
   if (openApiFound && openApiSpec) {
     ({ skills, signals: skillSignals } = skillsFromOpenApi(openApiSpec));
     if (skills.length === 0) {
-      ({ skills, signals: skillSignals } = buildSkillsFromSignals({ siteType, jsonLd, og, forms, pathPatterns }));
+      // OpenAPI was empty — fall back without ecommerce fabrication
+      ({ skills, signals: skillSignals } = buildSkillsFromSignals({ siteType: 'other', jsonLd, og, forms, pathPatterns }));
     }
-  } else {
+  } else if (jsonLd.length > 0 || forms.length > 0 || pathPatterns.length > 0) {
+    // Real HTML signals found — use declared type to enrich
     ({ skills, signals: skillSignals } = buildSkillsFromSignals({ siteType, jsonLd, og, forms, pathPatterns }));
+  } else {
+    // No signals at all — generic skeleton, ignore declared type
+    ({ skills, signals: skillSignals } = buildSkillsFromSignals({ siteType: 'other', jsonLd, og, forms, pathPatterns }));
+    skillSignals.push('No signals found — generic skeleton generated. Edit skills to match your actual API.');
   }
 
   const allSignals = [...fetchSignals, ...skillSignals];
