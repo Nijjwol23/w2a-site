@@ -1,0 +1,35 @@
+{
+  "w2a": "1.0",
+  "site": {
+    "name": "W2A Protocol",
+    "type": "saas",
+    "language": "en"
+  },
+  "capabilities": [
+    {
+      "id": "get_spec",
+      "intent": "retrieve the W2A protocol specification",
+      "action": "GET /spec/v0.1",
+      "input": {},
+      "output": { "spec": "object", "version": "string" },
+      "auth": "none"
+    },
+    {
+      "id": "validate_manifest",
+      "intent": "validate an agents.json file against the W2A spec",
+      "action": "POST /api/validate",
+      "input": { "manifest": "object" },
+      "output": { "valid": "bool", "errors": "string[]" },
+      "auth": "none"
+    }
+  ],
+  "policies": {
+    "rate_limit": "60/min",
+    "allowed_agents": ["*"]
+  },
+  "a2a_profile": {
+    "name": "W2A Protocol Agent",
+    "url": "https://w2a-protocol.org/.well-known/agents.json",
+    "version": "1.0"
+  }
+}

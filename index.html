@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W2A — Web2Agent Protocol</title>
+<meta name="description" content="The open protocol for agent-readable websites. A single file that makes any website discoverable by AI agents.">
+<meta property="og:title" content="W2A — Web2Agent Protocol">
+<meta property="og:description" content="MCP solved agent↔tools. A2A solved agent↔agent. W2A solves agent↔web.">
+<meta property="og:url" content="https://w2a-protocol.org">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090B;--bg2:#0F0F12;--bg3:#141418;--bg4:#1C1C22;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);--border3:rgba(255,255,255,0.16);
+  --text:#F4F4F5;--text2:#A1A1AA;--text3:#52525B;
+  --accent:#3B7BF8;--accent-h:#2563EB;
+  --accent-bg:rgba(59,123,248,0.07);--accent-bd:rgba(59,123,248,0.22);
+  --red:#F87171;--amber:#FCD34D;--green:#4ADE80;
+  --sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --r:6px;--rl:10px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;align-items:center;padding:0 2rem;background:rgba(9,9,11,0.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-i{max-width:1080px;width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px}
+.nav-v{font-size:10px;color:var(--text3);background:var(--bg3);border:1px solid var(--border2);padding:2px 7px;border-radius:4px;letter-spacing:.04em}
+.nav-links{display:flex;align-items:center;gap:1.5rem}
+.nav-links a{font-size:13px;font-weight:400;color:var(--text2);text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--text)}
+.nav-gh{display:flex!important;align-items:center;gap:6px;color:var(--text)!important;background:var(--bg3);border:1px solid var(--border2)!important;padding:5px 14px;border-radius:var(--r);transition:border-color .15s!important}
+.nav-gh:hover{border-color:var(--border3)!important}
+
+/* LAYOUT */
+.wrap{max-width:1080px;margin:0 auto;padding:0 2rem}
+.wrap-sm{max-width:720px;margin:0 auto;padding:0 2rem}
+hr.sep{border:none;border-top:1px solid var(--border)}
+
+/* HERO */
+.hero{padding:136px 2rem 96px;max-width:1080px;margin:0 auto}
+.hero-pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--accent);background:var(--accent-bg);border:1px solid var(--accent-bd);padding:4px 12px;border-radius:20px;margin-bottom:2rem;letter-spacing:.06em;text-transform:uppercase;opacity:0;animation:up .5s .05s forwards}
+.hero h1{font-size:clamp(2.6rem,6vw,4.8rem);font-weight:600;line-height:1.05;letter-spacing:-.025em;margin-bottom:1.5rem;opacity:0;animation:up .5s .1s forwards}
+.hero-sub{font-size:18px;font-weight:300;color:var(--text2);line-height:1.75;max-width:520px;margin-bottom:2.5rem;opacity:0;animation:up .5s .15s forwards}
+.hero-ctas{display:flex;gap:10px;margin-bottom:3.5rem;opacity:0;animation:up .5s .2s forwards}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-size:14px;font-weight:500;padding:9px 20px;border-radius:var(--r);text-decoration:none;transition:all .15s;white-space:nowrap;cursor:pointer}
+.btn-blue{background:var(--accent);color:#fff;border:1px solid var(--accent)}
+.btn-blue:hover{background:var(--accent-h);border-color:var(--accent-h)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--border3);color:var(--text)}
+
+/* PROTO STACK */
+.proto{display:flex;flex-direction:column;gap:1px;max-width:540px;border:1px solid var(--border2);border-radius:var(--rl);overflow:hidden;opacity:0;animation:up .5s .25s forwards}
+.prow{display:grid;grid-template-columns:50px 1fr auto;align-items:center;padding:13px 18px;background:var(--bg2);font-family:var(--mono);font-size:13px;border-bottom:1px solid var(--border);transition:background .15s}
+.prow:last-child{border-bottom:none}
+.prow:hover{background:var(--bg3)}
+.prow.cur{background:var(--accent-bg)}
+.ptag{color:var(--text3);font-weight:400}
+.prow.cur .ptag{color:var(--accent);font-weight:500}
+.pmid{color:var(--text2);padding:0 16px}
+.prow.cur .pmid{color:var(--text)}
+.purl{font-size:11px;color:var(--text3)}
+.prow.cur .purl{color:rgba(59,123,248,.6)}
+
+/* SECTIONS */
+.sec{padding:80px 0}
+.sec-h{margin-bottom:2.75rem}
+.sec-h h2{font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:600;letter-spacing:-.02em;line-height:1.15;margin-bottom:.75rem}
+.sec-h p{font-size:16px;font-weight:300;color:var(--text2);line-height:1.75;max-width:520px}
+.lbl{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:1rem}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border2);border-radius:var(--rl);overflow:hidden}
+.stat{padding:2rem 1.75rem;border-right:1px solid var(--border)}
+.stat:last-child{border-right:none}
+.stat-n{font-size:2.25rem;font-weight:600;letter-spacing:-.04em;line-height:1;margin-bottom:.5rem}
+.dn{color:var(--red)}
+.stat-l{font-size:13px;font-weight:300;color:var(--text2);line-height:1.5}
+
+/* CODE */
+.cb{border:1px solid var(--border2);border-radius:var(--rl);overflow:hidden}
+.cb-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg3);border-bottom:1px solid var(--border)}
+.cb-l{display:flex;align-items:center;gap:10px}
+.dots{display:flex;gap:5px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--bg4)}
+.fname{font-family:var(--mono);font-size:12px;color:var(--text3)}
+.cbadge{font-family:var(--mono);font-size:10px;color:var(--accent);background:var(--accent-bg);border:1px solid var(--accent-bd);padding:2px 8px;border-radius:4px;letter-spacing:.04em}
+pre{padding:1.5rem 1.75rem;font-family:var(--mono);font-size:13px;line-height:1.85;overflow-x:auto;background:var(--bg2);color:var(--text2)}
+.k{color:#7CB9FF}.s{color:#86EFAC}.n{color:#FCD34D}.c{color:var(--text3)}.w{color:var(--text)}
+
+/* TABS */
+.tabs{display:flex;border:1px solid var(--border2);border-bottom:none;border-radius:var(--rl) var(--rl) 0 0;overflow:hidden}
+.tb{flex:1;font-family:var(--mono);font-size:12px;padding:10px 0;background:var(--bg2);color:var(--text3);border:none;border-right:1px solid var(--border);cursor:pointer;transition:all .15s;letter-spacing:.03em}
+.tb:last-child{border-right:none}
+.tb.on{background:var(--bg3);color:var(--text)}
+.tb:hover:not(.on){color:var(--text2);background:var(--bg3)}
+.tab-panels .cb{border-radius:0 0 var(--rl) var(--rl)}
+.pnl{display:none}.pnl.on{display:block}
+
+/* LAYER GRID */
+.lgrid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border2);border-radius:var(--rl);overflow:hidden}
+.lcard{padding:2rem;border-right:1px solid var(--border);background:var(--bg2)}
+.lcard:last-child{border-right:none}
+.lcard.on{background:var(--accent-bg)}
+.lorg{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:1.25rem}
+.lcard.on .lorg{color:rgba(59,123,248,.7)}
+.lproto{font-size:2rem;font-weight:600;letter-spacing:-.03em;margin-bottom:.4rem}
+.lcard.on .lproto{color:var(--accent)}
+.larrow{font-family:var(--mono);font-size:12px;color:var(--text3);margin-bottom:1rem}
+.lcard.on .larrow{color:var(--text2)}
+.ldesc{font-size:13px;font-weight:300;color:var(--text3);line-height:1.65;margin-bottom:1.25rem}
+.llink{font-family:var(--mono);font-size:11px;color:var(--text3);text-decoration:none;transition:color .15s}
+.llink:hover{color:var(--text2)}
+.lcard.on .llink{color:var(--accent)}
+
+/* TIMELINE */
+.tl{position:relative}
+.tl::before{content:'';position:absolute;left:72px;top:0;bottom:0;width:1px;background:var(--border2)}
+.trow{display:flex;align-items:center;padding:1.75rem 0;border-bottom:1px solid var(--border);position:relative}
+.trow:last-child{border-bottom:none}
+.tyr{font-family:var(--mono);font-size:12px;color:var(--text3);width:60px;flex-shrink:0}
+.tdot{width:9px;height:9px;border-radius:50%;background:var(--bg4);border:1px solid var(--border3);flex-shrink:0;margin:0 28px;position:relative;z-index:1}
+.trow.now .tdot{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+.tfile{font-family:var(--mono);font-size:14px;font-weight:500;margin-bottom:3px}
+.trow.now .tfile{color:var(--accent)}
+.tdesc{font-size:13px;font-weight:300;color:var(--text3)}
+
+/* SPEC TABLE */
+.stbl{width:100%;border-collapse:collapse;font-size:13px}
+.stbl th{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);text-align:left;padding:10px 16px;background:var(--bg3);border-bottom:1px solid var(--border2)}
+.stbl td{padding:11px 16px;border-bottom:1px solid var(--border);color:var(--text2);font-weight:300;vertical-align:top}
+.stbl tr:last-child td{border-bottom:none}
+.stbl tr:hover td{background:var(--bg3)}
+.pill{display:inline-block;font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:4px;background:var(--bg4);color:var(--text2);border:1px solid var(--border2)}
+.pill.y{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-bd)}
+
+/* CTA */
+.cta{padding:96px 0;text-align:center}
+.cta h2{font-size:clamp(2rem,4.5vw,3rem);font-weight:600;letter-spacing:-.025em;margin-bottom:1rem;line-height:1.1}
+.cta p{font-size:16px;font-weight:300;color:var(--text2);max-width:460px;margin:0 auto 2.5rem;line-height:1.75}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:1.75rem 2rem}
+.ft{max-width:1080px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.fl{font-family:var(--mono);font-size:12px;color:var(--text3)}
+.fl a{color:inherit;text-decoration:none}
+.fr{display:flex;gap:1.5rem}
+.fr a{font-size:13px;font-weight:300;color:var(--text3);text-decoration:none;transition:color .15s}
+.fr a:hover{color:var(--text2)}
+
+/* ANIM */
+@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .stats{grid-template-columns:1fr}
+  .stat{border-right:none;border-bottom:1px solid var(--border)}
+  .lgrid{grid-template-columns:1fr}
+  .lcard{border-right:none;border-bottom:1px solid var(--border)}
+  .purl{display:none}
+  .nav-links a:not(.nav-gh){display:none}
+  .hero h1{font-size:2.4rem}
+  .hero-ctas{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-i">
+    <a href="/" class="nav-logo">
+      W2A <span class="nav-v">v0.1 · draft</span>
+    </a>
+    <div class="nav-links">
+      <a href="#install">Install</a>
+      <a href="#ecosystem">Ecosystem</a>
+      <a href="#spec">Spec</a>
+      <a href="https://github.com/theorderai/w2a/discussions" target="_blank">Discussions</a>
+      <a href="https://github.com/theorderai/w2a" class="nav-gh" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div style="padding-top:56px">
+<div class="hero">
+  <div class="hero-pill">Web2Agent Protocol</div>
+  <h1>The web,<br>agent-readable.</h1>
+  <p class="hero-sub">An open protocol for websites to declare their capabilities to AI agents. One file. Any framework. Zero crawling.</p>
+  <div class="hero-ctas">
+    <a href="#install" class="btn btn-blue">Get started</a>
+    <a href="https://github.com/theorderai/w2a" class="btn btn-ghost" target="_blank">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      View on GitHub
+    </a>
+  </div>
+  <div class="proto">
+    <div class="prow"><span class="ptag">MCP</span><span class="pmid">Agent ↔ Tools</span><span class="purl">modelcontextprotocol.io</span></div>
+    <div class="prow"><span class="ptag">A2A</span><span class="pmid">Agent ↔ Agent</span><span class="purl">a2a-protocol.org</span></div>
+    <div class="prow cur"><span class="ptag">W2A</span><span class="pmid">Agent ↔ Web</span><span class="purl">w2a-protocol.org</span></div>
+  </div>
+</div>
+</div>
+
+<hr class="sep">
+
+<!-- PROBLEM -->
+<section class="sec reveal">
+  <div class="wrap">
+    <div class="sec-h">
+      <div class="lbl">The problem</div>
+      <h2>Agents visit websites with no map.</h2>
+      <p>There is no standard for a website to declare itself to an AI agent. Every agent that visits your site discovers it the way a human does — loading page after page.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-n dn">40–50</div><div class="stat-l">page requests to understand<br>what one site does</div></div>
+      <div class="stat"><div class="stat-n dn">200M+</div><div class="stat-l">public websites with no<br>agent-readable declaration</div></div>
+      <div class="stat"><div class="stat-n dn">0</div><div class="stat-l">existing open standards<br>for website-to-agent</div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- SOLUTION -->
+<section class="sec reveal">
+  <div class="wrap">
+    <div class="sec-h">
+      <div class="lbl">The solution</div>
+      <h2>One file. Declare everything.</h2>
+      <p>Serve <code style="font-family:var(--mono);font-size:13px;color:var(--accent)">agents.json</code> at <code style="font-family:var(--mono);font-size:13px;color:var(--accent)">/.well-known/agents.json</code>. Any AI agent reads it once and knows exactly what your site can do — no crawling required.</p>
+    </div>
+    <div class="cb">
+      <div class="cb-hd">
+        <div class="cb-l"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="fname">/.well-known/agents.json</span></div>
+        <span class="cbadge">W2A v0.1</span>
+      </div>
+      <pre>{
+  <span class="k">"w2a"</span>:  <span class="s">"1.0"</span>,
+  <span class="k">"site"</span>: { <span class="k">"name"</span>: <span class="s">"Acme Store"</span>, <span class="k">"type"</span>: <span class="s">"ecommerce"</span> },
+
+  <span class="k">"capabilities"</span>: [
+    {
+      <span class="k">"id"</span>:      <span class="s">"search_products"</span>,
+      <span class="k">"intent"</span>: <span class="s">"find products by query or category"</span>,
+      <span class="k">"action"</span>: <span class="s">"GET /api/search"</span>,
+      <span class="k">"input"</span>:  { <span class="k">"q"</span>: <span class="n">"string"</span>, <span class="k">"category"</span>: <span class="n">"string?"</span> },
+      <span class="k">"output"</span>: { <span class="k">"items"</span>: <span class="n">"Product[]"</span>, <span class="k">"total"</span>: <span class="n">"int"</span> },
+      <span class="k">"auth"</span>:   <span class="s">"none"</span>
+    },
+    {
+      <span class="k">"id"</span>:      <span class="s">"checkout"</span>,
+      <span class="k">"intent"</span>: <span class="s">"complete a purchase"</span>,
+      <span class="k">"action"</span>: <span class="s">"POST /api/orders"</span>,
+      <span class="k">"input"</span>:  { <span class="k">"cart_id"</span>: <span class="n">"string"</span>, <span class="k">"payment_token"</span>: <span class="n">"string"</span> },
+      <span class="k">"output"</span>: { <span class="k">"order_id"</span>: <span class="n">"string"</span>, <span class="k">"status"</span>: <span class="n">"string"</span> },
+      <span class="k">"auth"</span>:   <span class="s">"session"</span>
+    }
+  ],
+
+  <span class="k">"policies"</span>: {
+    <span class="k">"rate_limit"</span>:    <span class="s">"60/min"</span>,
+    <span class="k">"allowed_agents"</span>: [<span class="s">"*"</span>]
+  }
+}</pre>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- INSTALL -->
+<section id="install" class="sec reveal">
+  <div class="wrap">
+    <div class="sec-h">
+      <div class="lbl">Install</div>
+      <h2>Three paths. Same result.</h2>
+      <p>Every website can be agent-ready in under two minutes, regardless of platform or technical access level.</p>
+    </div>
+    <div class="tabs">
+      <button class="tb on" onclick="tab(event,'cli')">CLI</button>
+      <button class="tb" onclick="tab(event,'script')">Script tag</button>
+      <button class="tb" onclick="tab(event,'dns')">DNS record</button>
+    </div>
+    <div class="tab-panels">
+      <div class="pnl on" id="p-cli">
+        <div class="cb"><div class="cb-hd"><div class="cb-l"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="fname">Terminal</span></div><span class="cbadge">Recommended</span></div>
+        <pre><span class="c"># run once in your project root</span>
+<span class="w">npx w2a@latest init</span>
+
+<span class="c"># detects: Next.js  WordPress  Shopify  Rails  Django  Express
+# reads your routes, schemas, API contracts
+# generates a draft manifest for you to review
+# registers /.well-known/agents.json automatically</span></pre></div>
+      </div>
+      <div class="pnl" id="p-script">
+        <div class="cb"><div class="cb-hd"><div class="cb-l"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="fname">HTML — works on any platform</span></div><span class="cbadge">No server needed</span></div>
+        <pre><span class="k">&lt;script</span>
+  <span class="s">src</span>=<span class="s">"https://cdn.w2a-protocol.org/v1.js"</span>
+  <span class="s">data-site</span>=<span class="s">"yoursite.com"</span><span class="k">&gt;&lt;/script&gt;</span>
+
+<span class="c"># reads Schema.org JSON-LD, Open Graph, sitemap, HTML forms
+# generates and serves the manifest via service worker
+# works on Squarespace, Wix, Webflow — any locked platform</span></pre></div>
+      </div>
+      <div class="pnl" id="p-dns">
+        <div class="cb"><div class="cb-hd"><div class="cb-l"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="fname">DNS — zero code, any host</span></div><span class="cbadge">Zero touch</span></div>
+        <pre><span class="c"># add one CNAME record</span>
+<span class="w">_w2a.yoursite.com  CNAME  edge.w2a-protocol.org</span>
+
+<span class="c"># W2A edge network intercepts agent requests
+# crawls your site once, builds and caches the manifest
+# your origin server never sees agent traffic again</span></pre></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- ECOSYSTEM -->
+<section id="ecosystem" class="sec reveal">
+  <div class="wrap">
+    <div class="sec-h">
+      <div class="lbl">Ecosystem</div>
+      <h2>The missing third layer.</h2>
+      <p>W2A completes the agentic web stack alongside MCP and A2A. Each protocol solves a distinct layer. None overlap.</p>
+    </div>
+    <div class="lgrid">
+      <div class="lcard">
+        <div class="lorg">Anthropic</div>
+        <div class="lproto">MCP</div>
+        <div class="larrow">Agent ↔ Tools</div>
+        <div class="ldesc">Model Context Protocol. Standardises how agents connect to tools, APIs, and data sources.</div>
+        <a href="https://modelcontextprotocol.io" class="llink" target="_blank">modelcontextprotocol.io →</a>
+      </div>
+      <div class="lcard">
+        <div class="lorg">Google · Linux Foundation</div>
+        <div class="lproto">A2A</div>
+        <div class="larrow">Agent ↔ Agent</div>
+        <div class="ldesc">Agent2Agent Protocol. Enables enterprise agents to discover each other and collaborate on tasks.</div>
+        <a href="https://a2a-protocol.org" class="llink" target="_blank">a2a-protocol.org →</a>
+      </div>
+      <div class="lcard on">
+        <div class="lorg">Open · Community</div>
+        <div class="lproto">W2A</div>
+        <div class="larrow">Agent ↔ Web</div>
+        <div class="ldesc">Web2Agent Protocol. Makes any website discoverable by AI agents. The layer MCP and A2A both assume but never defined.</div>
+        <a href="https://w2a-protocol.org" class="llink">w2a-protocol.org →</a>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem">
+      <div class="cb">
+        <div class="cb-hd"><div class="cb-l"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="fname">A2A compatibility — agents.json is a valid A2A AgentCard</span></div><span class="cbadge">A2A compatible</span></div>
+        <pre>{
+  <span class="k">"w2a"</span>: <span class="s">"1.0"</span>,
+  <span class="k">"a2a_profile"</span>: {
+    <span class="k">"name"</span>:    <span class="s">"Acme Store Agent"</span>,
+    <span class="k">"url"</span>:     <span class="s">"https://acme.com/.well-known/agents.json"</span>,
+    <span class="k">"version"</span>: <span class="s">"1.0"</span>
+  }
+  <span class="c">// ... capabilities</span>
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- LINEAGE -->
+<section class="sec reveal">
+  <div class="wrap-sm">
+    <div class="sec-h">
+      <div class="lbl">The lineage</div>
+      <h2>The third chapter.</h2>
+      <p>Each generation of the web needed a standard to make it machine-readable. W2A is the one for the agent era.</p>
+    </div>
+    <div class="tl">
+      <div class="trow"><div class="tyr">1994</div><div class="tdot"></div><div><div class="tfile">robots.txt</div><div class="tdesc">Told crawlers what not to index</div></div></div>
+      <div class="trow"><div class="tyr">2005</div><div class="tdot"></div><div><div class="tfile">sitemap.xml</div><div class="tdesc">Told crawlers where pages are</div></div></div>
+      <div class="trow now"><div class="tyr">2025</div><div class="tdot"></div><div><div class="tfile">agents.json</div><div class="tdesc">Tells agents what a site can do</div></div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- SPEC -->
+<section id="spec" class="sec reveal">
+  <div class="wrap">
+    <div class="sec-h">
+      <div class="lbl">Spec v0.1</div>
+      <h2>Simple by design.</h2>
+      <p>Full specification in the GitHub repository. Core capability schema:</p>
+    </div>
+    <div class="cb">
+      <div class="cb-hd"><div class="cb-l"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="fname">Capability object</span></div></div>
+      <table class="stbl">
+        <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code style="font-family:var(--mono)">id</code></td><td><code style="font-family:var(--mono);color:#FCD34D">string</code></td><td><span class="pill y">yes</span></td><td>Unique slug — e.g. <code style="font-family:var(--mono);font-size:12px">"search_products"</code></td></tr>
+          <tr><td><code style="font-family:var(--mono)">intent</code></td><td><code style="font-family:var(--mono);color:#FCD34D">string</code></td><td><span class="pill y">yes</span></td><td>Plain-English description the agent reads to understand what this capability does</td></tr>
+          <tr><td><code style="font-family:var(--mono)">action</code></td><td><code style="font-family:var(--mono);color:#FCD34D">string</code></td><td><span class="pill y">yes</span></td><td>HTTP method and path — e.g. <code style="font-family:var(--mono);font-size:12px">"GET /api/search"</code></td></tr>
+          <tr><td><code style="font-family:var(--mono)">input</code></td><td><code style="font-family:var(--mono);color:#FCD34D">object</code></td><td><span class="pill">no</span></td><td>Named input parameters with types: <code style="font-family:var(--mono);font-size:12px">string  string?  int  float  bool  object[]</code></td></tr>
+          <tr><td><code style="font-family:var(--mono)">output</code></td><td><code style="font-family:var(--mono);color:#FCD34D">object</code></td><td><span class="pill">no</span></td><td>Named output fields with types</td></tr>
+          <tr><td><code style="font-family:var(--mono)">auth</code></td><td><code style="font-family:var(--mono);color:#FCD34D">string</code></td><td><span class="pill y">yes</span></td><td><code style="font-family:var(--mono);font-size:12px">none</code> · <code style="font-family:var(--mono);font-size:12px">session</code> · <code style="font-family:var(--mono);font-size:12px">bearer</code> · <code style="font-family:var(--mono);font-size:12px">apikey</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.25rem;font-size:13px;font-weight:300;color:var(--text3)">Full spec including site fields, policies, and federation → <a href="https://github.com/theorderai/w2a/blob/main/spec/v0.1.md" style="color:var(--accent);text-decoration:none" target="_blank">spec/v0.1.md</a></p>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- CTA -->
+<div class="cta reveal">
+  <div class="wrap">
+    <div class="lbl" style="justify-content:center;display:flex">Open standard</div>
+    <h2>Apache 2.0.<br>Community owned.</h2>
+    <p>W2A is maintained by The Order AI and open to contributions. The goal is a protocol no single company controls — the same model as A2A under the Linux Foundation.</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <a href="https://github.com/theorderai/w2a" class="btn btn-blue" target="_blank">View on GitHub</a>
+      <a href="https://github.com/theorderai/w2a/discussions" class="btn btn-ghost" target="_blank">Join discussions</a>
+      <a href="https://github.com/a2aproject/A2A/discussions" class="btn btn-ghost" target="_blank">A2A proposal</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="ft">
+    <div class="fl">W2A Protocol · Apache 2.0 · <a href="https://theorderai.com" target="_blank">The Order AI</a></div>
+    <div class="fr">
+      <a href="https://github.com/theorderai/w2a" target="_blank">GitHub</a>
+      <a href="https://github.com/theorderai/w2a/blob/main/spec/v0.1.md" target="_blank">Spec</a>
+      <a href="https://a2a-protocol.org" target="_blank">A2A</a>
+      <a href="https://modelcontextprotocol.io" target="_blank">MCP</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function tab(e,id){
+  document.querySelectorAll('.tb').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.pnl').forEach(p=>p.classList.remove('on'));
+  e.currentTarget.classList.add('on');
+  document.getElementById('p-'+id).classList.add('on');
+}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
