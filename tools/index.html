@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W2A — Generate & Validate</title>
+<meta name="description" content="Generate an agents.json for your website or validate an existing one against the W2A spec.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090B;--bg2:#0F0F12;--bg3:#141418;--bg4:#1C1C22;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);--border3:rgba(255,255,255,0.18);
+  --text:#FFFFFF;--text2:#D4D4D8;--text3:#A1A1AA;--text4:#52525B;
+  --accent:#3B7BF8;--accent-h:#2563EB;
+  --accent-bg:rgba(59,123,248,0.07);--accent-bd:rgba(59,123,248,0.22);
+  --green:#22C55E;--green-bg:rgba(34,197,94,0.08);--green-bd:rgba(34,197,94,0.25);
+  --red:#F87171;--red-bg:rgba(248,113,113,0.08);--red-bd:rgba(248,113,113,0.25);
+  --amber:#FCD34D;--amber-bg:rgba(252,211,77,0.08);--amber-bd:rgba(252,211,77,0.2);
+  --sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --r:6px;--rl:10px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;align-items:center;padding:0 2rem;background:rgba(9,9,11,0.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-i{max-width:1080px;width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px}
+.nav-v{font-size:10px;color:var(--text3);background:var(--bg3);border:1px solid var(--border2);padding:2px 7px;border-radius:4px;letter-spacing:.04em}
+.nav-links{display:flex;align-items:center;gap:1.5rem}
+.nav-links a{font-size:13px;font-weight:400;color:var(--text2);text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--text)}
+.nav-links a.active{color:var(--accent)}
+.nav-gh{display:flex!important;align-items:center;gap:6px;color:var(--text)!important;background:var(--bg3);border:1px solid var(--border2)!important;padding:5px 14px;border-radius:var(--r)}
+
+.wrap{max-width:760px;margin:0 auto;padding:0 2rem}
+
+.page-header{padding:100px 2rem 48px;max-width:760px;margin:0 auto}
+.page-header .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:1rem}
+.page-header h1{font-size:clamp(2rem,5vw,3rem);font-weight:600;letter-spacing:-.025em;line-height:1.1;margin-bottom:.75rem}
+.page-header p{font-size:16px;font-weight:300;color:var(--text2);line-height:1.75}
+
+.mode-tabs{display:flex;gap:2px;margin-bottom:2rem}
+.mode-tab{flex:1;font-family:var(--mono);font-size:13px;font-weight:400;padding:11px 0;background:var(--bg2);color:var(--text3);border:1px solid var(--border2);cursor:pointer;transition:all .15s;letter-spacing:.02em}
+.mode-tab:first-child{border-radius:var(--r) 0 0 var(--r)}
+.mode-tab:last-child{border-radius:0 var(--r) var(--r) 0}
+.mode-tab.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-bd)}
+.mode-tab:hover:not(.on){color:var(--text2);background:var(--bg3)}
+
+.panel{display:none}.panel.on{display:block}
+
+.field{margin-bottom:1.5rem}
+.field label{display:block;font-family:var(--mono);font-size:12px;color:var(--text3);margin-bottom:.5rem;letter-spacing:.04em;text-transform:uppercase}
+.field input,.field select,.field textarea{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:13px;padding:10px 14px;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent-bd)}
+.field input::placeholder,.field textarea::placeholder{color:var(--text4)}
+.field select option{background:var(--bg3)}
+.field textarea{resize:vertical;min-height:280px;line-height:1.7}
+.field-hint{font-size:12px;color:var(--text4);margin-top:.4rem;font-weight:300}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--sans);font-size:14px;font-weight:500;padding:10px 24px;border-radius:var(--r);border:none;cursor:pointer;transition:all .15s;width:100%}
+.btn-blue{background:var(--accent);color:#fff}
+.btn-blue:hover{background:var(--accent-h)}
+.btn-blue:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--border3);color:var(--text)}
+
+.result{margin-top:2rem;border-radius:var(--rl);overflow:hidden;border:1px solid var(--border2)}
+.result-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-bottom:1px solid var(--border)}
+.result-title{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.result-actions{display:flex;gap:8px}
+.result-btn{font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:4px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s}
+.result-btn:hover{border-color:var(--border3);color:var(--text)}
+.result-btn.copied{border-color:var(--green-bd);color:var(--green)}
+pre.result-code{padding:1.25rem 1.5rem;font-family:var(--mono);font-size:12.5px;line-height:1.8;overflow-x:auto;background:var(--bg2);color:var(--text2);max-height:480px;overflow-y:auto}
+
+.status-card{border-radius:var(--rl);padding:1.25rem 1.5rem;margin-top:1.5rem;border:1px solid}
+.status-card.valid{background:var(--green-bg);border-color:var(--green-bd)}
+.status-card.invalid{background:var(--red-bg);border-color:var(--red-bd)}
+.status-card.warning{background:var(--amber-bg);border-color:var(--amber-bd)}
+.status-icon{font-size:13px;font-weight:500;font-family:var(--mono);margin-bottom:.75rem}
+.status-card.valid .status-icon{color:var(--green)}
+.status-card.invalid .status-icon{color:var(--red)}
+.status-card.warning .status-icon{color:var(--amber)}
+
+.issue-list{list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-top:.75rem}
+.issue{display:flex;gap:10px;align-items:flex-start}
+.issue-path{font-family:var(--mono);font-size:11px;color:var(--text3);flex-shrink:0;padding-top:2px}
+.issue-msg{font-size:13px;font-weight:300;color:var(--text2);line-height:1.5}
+.issue-fix{font-size:12px;color:var(--text3);margin-top:2px;font-style:italic}
+
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.sep{border:none;border-top:1px solid var(--border);margin:2.5rem 0}
+
+.site-type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.type-btn{font-family:var(--mono);font-size:12px;padding:8px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg2);color:var(--text3);cursor:pointer;transition:all .15s;text-align:center}
+.type-btn:hover{border-color:var(--border3);color:var(--text2)}
+.type-btn.on{background:var(--accent-bg);border-color:var(--accent-bd);color:var(--accent)}
+
+.check-result{border:1px solid var(--border2);border-radius:var(--rl);overflow:hidden;margin-top:1.5rem}
+.check-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px}
+.check-row:last-child{border-bottom:none}
+.check-label{font-family:var(--mono);font-size:12px;color:var(--text3)}
+.check-val{font-family:var(--mono);font-size:12px;font-weight:500}
+.yes{color:var(--green)}.no{color:var(--red)}.na{color:var(--text3)}
+
+footer{border-top:1px solid var(--border);padding:1.75rem 2rem;margin-top:5rem}
+.ft{max-width:1080px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.fl{font-family:var(--mono);font-size:12px;color:var(--text3)}
+.fl a{color:inherit;text-decoration:none}
+.fr{display:flex;gap:1.5rem}
+.fr a{font-size:13px;font-weight:300;color:var(--text3);text-decoration:none;transition:color .15s}
+.fr a:hover{color:var(--text2)}
+
+@media(max-width:600px){
+  .site-type-grid{grid-template-columns:repeat(2,1fr)}
+  .nav-links a:not(.nav-gh){display:none}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-i">
+    <a href="/" class="nav-logo">W2A <span class="nav-v">v0.1 · draft</span></a>
+    <div class="nav-links">
+      <a href="/#install">Install</a>
+      <a href="/#ecosystem">Ecosystem</a>
+      <a href="/#spec">Spec</a>
+      <a href="/tools" class="active">Tools</a>
+      <a href="https://github.com/Nijjwol23/w2a/discussions" target="_blank">Discussions</a>
+      <a href="https://github.com/Nijjwol23/w2a" class="nav-gh" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="lbl">Tools</div>
+  <h1>Generate & validate<br>your agents.json</h1>
+  <p>Enter your site URL to auto-generate a manifest, or paste an existing one to validate it against the W2A spec.</p>
+</div>
+
+<div class="wrap">
+
+  <div class="mode-tabs">
+    <button class="mode-tab on" onclick="mode(event,'generate')">Generate</button>
+    <button class="mode-tab" onclick="mode(event,'validate')">Validate</button>
+    <button class="mode-tab" onclick="mode(event,'check')">Check a site</button>
+  </div>
+
+  <!-- GENERATE -->
+  <div class="panel on" id="p-generate">
+    <div class="field">
+      <label>Your website URL</label>
+      <input type="url" id="gen-url" placeholder="https://yoursite.com" autocomplete="off" spellcheck="false">
+      <div class="field-hint">We'll read your existing Schema.org, Open Graph, and sitemap signals to build the manifest.</div>
+    </div>
+
+    <div class="field">
+      <label>Site type</label>
+      <div class="site-type-grid" id="type-grid">
+        <button class="type-btn on" data-type="ecommerce" onclick="setType(this)">ecommerce</button>
+        <button class="type-btn" data-type="blog" onclick="setType(this)">blog</button>
+        <button class="type-btn" data-type="saas" onclick="setType(this)">saas</button>
+        <button class="type-btn" data-type="marketplace" onclick="setType(this)">marketplace</button>
+        <button class="type-btn" data-type="media" onclick="setType(this)">media</button>
+        <button class="type-btn" data-type="directory" onclick="setType(this)">directory</button>
+        <button class="type-btn" data-type="api" onclick="setType(this)">api</button>
+        <button class="type-btn" data-type="other" onclick="setType(this)">other</button>
+      </div>
+    </div>
+
+    <button class="btn btn-blue" id="gen-btn" onclick="generate()">
+      <span id="gen-label">Generate agents.json</span>
+    </button>
+
+    <div id="gen-result" style="display:none">
+      <div class="result">
+        <div class="result-header">
+          <span class="result-title">/.well-known/agents.json</span>
+          <div class="result-actions">
+            <button class="result-btn" onclick="copyResult('gen-code', this)">Copy</button>
+            <button class="result-btn" onclick="downloadResult()">Download</button>
+          </div>
+        </div>
+        <pre class="result-code" id="gen-code"></pre>
+      </div>
+      <div id="gen-install" style="display:none">
+        <div class="sep"></div>
+        <div class="field">
+          <label>Next step — add this file to your site</label>
+          <div style="font-size:14px;font-weight:300;color:var(--text2);line-height:1.75">
+            Place the downloaded file at <code style="font-family:var(--mono);font-size:13px;color:var(--accent)">.well-known/agents.json</code> in your site's root directory. That's it — no code changes needed.
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:1rem">
+          <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:1rem">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.06em">Vercel / Next.js</div>
+            <code style="font-family:var(--mono);font-size:12px;color:var(--text2)">public/.well-known/agents.json</code>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:1rem">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.06em">WordPress</div>
+            <code style="font-family:var(--mono);font-size:12px;color:var(--text2)">/public_html/.well-known/agents.json</code>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:1rem">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.06em">Shopify</div>
+            <code style="font-family:var(--mono);font-size:12px;color:var(--text2)">Settings → Files → Upload</code>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:1rem">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.06em">Any other host</div>
+            <code style="font-family:var(--mono);font-size:12px;color:var(--text2)">Root folder → .well-known/</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VALIDATE -->
+  <div class="panel" id="p-validate">
+    <div class="field">
+      <label>Paste your agents.json</label>
+      <textarea id="val-input" placeholder='{&#10;  "w2a": "1.0",&#10;  "site": { ... },&#10;  "skills": [ ... ]&#10;}'></textarea>
+    </div>
+    <button class="btn btn-blue" onclick="validate()">
+      <span id="val-label">Validate</span>
+    </button>
+    <div id="val-result"></div>
+  </div>
+
+  <!-- CHECK -->
+  <div class="panel" id="p-check">
+    <div class="field">
+      <label>Website domain or URL</label>
+      <input type="text" id="chk-url" placeholder="example.com" autocomplete="off" spellcheck="false">
+      <div class="field-hint">We'll check if this site serves a valid W2A manifest at /.well-known/agents.json</div>
+    </div>
+    <button class="btn btn-blue" onclick="checkSite()">
+      <span id="chk-label">Check site</span>
+    </button>
+    <div id="chk-result"></div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="ft">
+    <div class="fl">W2A Protocol · Apache 2.0 · <a href="https://github.com/Nijjwol23" target="_blank">@Nijjwol23</a></div>
+    <div class="fr">
+      <a href="https://github.com/Nijjwol23/w2a" target="_blank">GitHub</a>
+      <a href="https://github.com/Nijjwol23/w2a/blob/main/spec/v0.1.md" target="_blank">Spec</a>
+      <a href="https://a2a-protocol.org" target="_blank">A2A</a>
+      <a href="https://modelcontextprotocol.io" target="_blank">MCP</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const API = 'https://w2a-protocol.org/api';
+let selectedType = 'ecommerce';
+let lastManifest = null;
+
+function mode(e, id) {
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  e.currentTarget.classList.add('on');
+  document.getElementById('p-' + id).classList.add('on');
+}
+
+function setType(btn) {
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  selectedType = btn.dataset.type;
+}
+
+function setLoading(btnId, labelId, loading) {
+  const btn = document.getElementById(btnId);
+  const lbl = document.getElementById(labelId);
+  if (loading) {
+    btn.disabled = true;
+    lbl.innerHTML = '<span class="spinner"></span>';
+  } else {
+    btn.disabled = false;
+  }
+}
+
+async function generate() {
+  const url = document.getElementById('gen-url').value.trim();
+  if (!url) {
+    document.getElementById('gen-url').focus();
+    return;
+  }
+
+  setLoading('gen-btn', 'gen-label', true);
+  document.getElementById('gen-result').style.display = 'none';
+
+  try {
+    const res = await fetch(`${API}/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, site_type: selectedType })
+    });
+    const data = await res.json();
+    lastManifest = data.manifest;
+    document.getElementById('gen-code').textContent = JSON.stringify(data.manifest, null, 2);
+    document.getElementById('gen-result').style.display = 'block';
+    document.getElementById('gen-install').style.display = 'block';
+    document.getElementById('gen-label').textContent = 'Regenerate';
+  } catch {
+    document.getElementById('gen-label').textContent = 'Generate agents.json';
+    alert('Could not reach the generation API. Make sure the API is deployed.');
+  } finally {
+    document.getElementById('gen-btn').disabled = false;
+  }
+}
+
+async function validate() {
+  const raw = document.getElementById('val-input').value.trim();
+  if (!raw) { document.getElementById('val-input').focus(); return; }
+
+  let manifest;
+  try { manifest = JSON.parse(raw); }
+  catch { renderValidation({ valid: false, errors: [{ path: '$', message: 'Invalid JSON — check for missing commas or brackets', fix: null }], warnings: [] }); return; }
+
+  document.getElementById('val-label').innerHTML = '<span class="spinner"></span>';
+
+  try {
+    const res = await fetch(`${API}/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ manifest })
+    });
+    const data = await res.json();
+    renderValidation(data);
+  } catch {
+    renderValidation({ valid: false, errors: [{ path: '$', message: 'Could not reach validation API', fix: null }], warnings: [] });
+  } finally {
+    document.getElementById('val-label').textContent = 'Validate';
+  }
+}
+
+function renderValidation(data) {
+  const el = document.getElementById('val-result');
+  const { valid, errors = [], warnings = [] } = data;
+
+  let html = '';
+
+  if (valid && warnings.length === 0) {
+    html += `<div class="status-card valid"><div class="status-icon">Valid</div><div style="font-size:13px;font-weight:300;color:var(--text2)">Your agents.json is valid W2A v1.0. It's ready to deploy at <code style="font-family:var(--mono);color:var(--accent)">/.well-known/agents.json</code>.</div></div>`;
+  } else if (!valid) {
+    html += `<div class="status-card invalid"><div class="status-icon">${errors.length} error${errors.length !== 1 ? 's' : ''} found</div><ul class="issue-list">`;
+    errors.forEach(e => {
+      html += `<li class="issue"><span class="issue-path">${e.path}</span><div><div class="issue-msg">${e.message}</div>${e.fix ? `<div class="issue-fix">${e.fix}</div>` : ''}</div></li>`;
+    });
+    html += '</ul></div>';
+  }
+
+  if (warnings.length > 0) {
+    html += `<div class="status-card warning" style="margin-top:1rem"><div class="status-icon">${warnings.length} warning${warnings.length !== 1 ? 's' : ''}</div><ul class="issue-list">`;
+    warnings.forEach(w => {
+      html += `<li class="issue"><span class="issue-path">${w.path}</span><div><div class="issue-msg">${w.message}</div>${w.fix ? `<div class="issue-fix">${w.fix}</div>` : ''}</div></li>`;
+    });
+    html += '</ul></div>';
+  }
+
+  el.innerHTML = html;
+}
+
+async function checkSite() {
+  const url = document.getElementById('chk-url').value.trim();
+  if (!url) { document.getElementById('chk-url').focus(); return; }
+
+  document.getElementById('chk-label').innerHTML = '<span class="spinner"></span>';
+  document.getElementById('chk-result').innerHTML = '';
+
+  try {
+    const res = await fetch(`${API}/check?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    renderCheck(data);
+  } catch {
+    document.getElementById('chk-result').innerHTML = '<div class="status-card invalid" style="margin-top:1.5rem"><div class="status-icon">Error</div><div style="font-size:13px;font-weight:300;color:var(--text2)">Could not reach the check API.</div></div>';
+  } finally {
+    document.getElementById('chk-label').textContent = 'Check site';
+  }
+}
+
+function renderCheck(data) {
+  const el = document.getElementById('chk-result');
+  const enabled = data.w2a_enabled;
+  const valid = data.valid;
+
+  let html = `<div class="check-result">`;
+  html += row('W2A enabled', enabled ? 'yes' : 'no', enabled ? 'yes' : 'no');
+  if (enabled) {
+    html += row('Valid manifest', valid ? 'yes' : 'no', valid ? 'yes' : 'no');
+    html += row('Site name', data.site_name || '—', 'na');
+    html += row('Site type', data.site_type || '—', 'na');
+    html += row('Skills', data.skill_count ?? '—', 'na');
+    html += row('A2A compatible', data.a2a_compatible ? 'yes' : 'no', data.a2a_compatible ? 'yes' : 'no');
+  }
+  html += `</div>`;
+
+  if (enabled && data.skills?.length) {
+    html += `<div style="margin-top:1rem">`;
+    data.skills.forEach(c => {
+      html += `<div style="padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text);margin-bottom:3px">${c.id}</div>
+        <div style="font-size:13px;font-weight:300;color:var(--text3)">${c.intent}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (!enabled) {
+    html += `<div class="status-card invalid" style="margin-top:1.5rem">
+      <div class="status-icon">Not W2A enabled</div>
+      <div style="font-size:13px;font-weight:300;color:var(--text2);line-height:1.75">
+        This site doesn't serve a W2A manifest yet. Use the <button onclick="switchToGenerate('${data.domain}')" style="background:none;border:none;color:var(--accent);cursor:pointer;font-family:var(--mono);font-size:13px;padding:0;text-decoration:underline">Generate tab</button> to create one for them.
+      </div>
+    </div>`;
+  }
+
+  if (enabled && !valid && data.errors?.length) {
+    html += `<div class="status-card invalid" style="margin-top:1rem"><div class="status-icon">${data.errors.length} error${data.errors.length !== 1 ? 's' : ''} in manifest</div><ul class="issue-list">`;
+    data.errors.forEach(e => {
+      html += `<li class="issue"><span class="issue-path">${e.path}</span><div class="issue-msg">${e.message}</div></li>`;
+    });
+    html += '</ul></div>';
+  }
+
+  el.innerHTML = html;
+}
+
+function row(label, value, cls) {
+  return `<div class="check-row"><span class="check-label">${label}</span><span class="check-val ${cls}">${value}</span></div>`;
+}
+
+function switchToGenerate(domain) {
+  document.querySelectorAll('.mode-tab')[0].click();
+  document.getElementById('gen-url').value = 'https://' + (domain || '');
+}
+
+function copyResult(id, btn) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function downloadResult() {
+  if (!lastManifest) return;
+  const blob = new Blob([JSON.stringify(lastManifest, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'agents.json';
+  a.click();
+}
+
+document.getElementById('gen-url').addEventListener('keydown', e => { if (e.key === 'Enter') generate(); });
+document.getElementById('chk-url').addEventListener('keydown', e => { if (e.key === 'Enter') checkSite(); });
+</script>
+</body>
+</html>
