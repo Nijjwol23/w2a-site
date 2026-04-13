@@ -6,7 +6,7 @@
     "language": "en",
     "description": "The open standard that makes any website agent-readable. Spec, validator, and tooling for the Web2Agent Protocol."
   },
-  "capabilities": [
+  "skills": [
     {
       "id": "get_spec",
       "intent": "retrieve the full W2A protocol specification for a given version",
@@ -94,7 +94,7 @@
         "manifest_url": "string?",
         "valid": "bool?",
         "version": "string?",
-        "capability_count": "int?",
+        "skill_count": "int?",
         "errors": "string[]?"
       },
       "auth": "none",
@@ -108,8 +108,44 @@
   },
   "a2a_profile": {
     "name": "W2A Protocol",
+    "description": "Official agent interface for the W2A Protocol — spec retrieval, manifest validation, and site checking.",
     "url": "https://w2a-protocol.org/.well-known/agents.json",
     "version": "1.0",
-    "description": "Official agent interface for the W2A Protocol — spec retrieval, manifest validation, and site checking."
+    "provider": {
+      "organization": "W2A Protocol",
+      "url": "https://w2a-protocol.org"
+    },
+    "capabilities": {
+      "streaming": false,
+      "pushNotifications": false
+    },
+    "defaultInputModes": ["application/json"],
+    "defaultOutputModes": ["application/json"],
+    "skills": [
+      {
+        "id": "validate_manifest",
+        "name": "Validate W2A manifest",
+        "description": "Validate an agents.json manifest against the W2A spec",
+        "tags": ["w2a", "validation", "manifest"],
+        "inputModes": ["application/json"],
+        "outputModes": ["application/json"]
+      },
+      {
+        "id": "check_site",
+        "name": "Check site W2A status",
+        "description": "Check whether a website serves a valid W2A manifest",
+        "tags": ["w2a", "discovery", "check"],
+        "inputModes": ["application/json"],
+        "outputModes": ["application/json"]
+      },
+      {
+        "id": "generate_manifest",
+        "name": "Generate W2A manifest",
+        "description": "Generate an agents.json manifest from a website URL",
+        "tags": ["w2a", "generate", "manifest"],
+        "inputModes": ["application/json"],
+        "outputModes": ["application/json"]
+      }
+    ]
   }
 }
