@@ -131,6 +131,6 @@ const SCHEMA = {
     return res.status(200).json({
       version: '1.0',
       schema: SCHEMA,
-      published_at: '2025-04-13T00:00:00Z'
+      published_at: '2026-04-13T00:00:00Z'
     });
   }

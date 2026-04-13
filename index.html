@@ -175,10 +175,9 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem}
   posthog.init('phc_AhBo2PYc7eZrSrkLeQGDqJ5XdWdnwRRWwgxZ3JT8DJNq', {
       api_host: 'https://us.i.posthog.com',
       defaults: '2026-01-30',
-      person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
+      person_profiles: 'identified_only',
   })
 </script>
-
 </head>
 <body>
 
@@ -293,45 +292,41 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem}
 <section id="install" class="sec reveal">
   <div class="wrap">
     <div class="sec-h">
-      <div class="lbl">Install</div>
-      <h2>Three paths. Same result.</h2>
-      <p>Every website can be agent-ready in under two minutes, regardless of platform or technical access level.</p>
+      <div class="lbl">Get started</div>
+      <h2>Up and running<br>in two minutes.</h2>
+      <p>Generate your <code style="font-family:var(--mono);font-size:14px;color:var(--accent)">agents.json</code> from the web tool. Drop the file in your site root. Done.</p>
     </div>
-    <div class="tabs">
-      <button class="tb on" onclick="tab(event,'cli')">CLI</button>
-      <button class="tb" onclick="tab(event,'script')">Script tag</button>
-      <button class="tb" onclick="tab(event,'dns')">DNS record</button>
+
+    <div class="cb">
+      <div class="cb-hd">
+        <div class="cb-l">
+          <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+          <span class="fname">The fastest path — no code required</span>
+        </div>
+        <span class="cbadge">Live now</span>
+      </div>
+      <pre><span class="c"># 1. Go to the generator</span>
+<span class="w">w2a-protocol.org/tools</span>
+
+<span class="c"># 2. Enter your site URL — auto-detects OpenAPI, Schema.org,
+#    Open Graph, sitemaps, and HTML forms</span>
+
+<span class="c"># 3. Download your agents.json and place it at:</span>
+<span class="w">/.well-known/agents.json</span>
+
+<span class="c"># Vercel / Next.js  →  public/.well-known/agents.json
+# WordPress         →  public_html/.well-known/agents.json
+# Any other host    →  root folder → .well-known/agents.json</span></pre>
     </div>
-    <div class="tab-panels">
-      <div class="pnl on" id="p-cli">
-        <div class="cb"><div class="cb-hd"><div class="cb-l"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="fname">Terminal</span></div><span class="cbadge">Recommended</span></div>
-        <pre><span class="c"># run once in your project root</span>
-<span class="w">npx w2a@latest init</span>
 
-<span class="c"># detects: Next.js  WordPress  Shopify  Rails  Django  Express
-# reads your routes, schemas, API contracts
-# generates a draft manifest for you to review
-# registers /.well-known/agents.json automatically</span></pre></div>
+    <div style="margin-top:1.5rem;padding:1.25rem 1.5rem;background:var(--accent-bg);border:1px solid var(--accent-bd);border-radius:var(--rl)">
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:.6rem">On the roadmap</div>
+      <div style="display:flex;gap:2rem;flex-wrap:wrap">
+        <span style="font-family:var(--mono);font-size:12px;color:var(--text3)">npx w2a@latest init</span>
+        <span style="font-family:var(--mono);font-size:12px;color:var(--text3)">&lt;script src="cdn.w2a-protocol.org/v1.js"&gt;</span>
+        <span style="font-family:var(--mono);font-size:12px;color:var(--text3)">_w2a CNAME edge.w2a-protocol.org</span>
       </div>
-      <div class="pnl" id="p-script">
-        <div class="cb"><div class="cb-hd"><div class="cb-l"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="fname">HTML — works on any platform</span></div><span class="cbadge">No server needed</span></div>
-        <pre><span class="k">&lt;script</span>
-  <span class="s">src</span>=<span class="s">"https://cdn.w2a-protocol.org/v1.js"</span>
-  <span class="s">data-site</span>=<span class="s">"yoursite.com"</span><span class="k">&gt;&lt;/script&gt;</span>
-
-<span class="c"># reads Schema.org JSON-LD, Open Graph, sitemap, HTML forms
-# generates and serves the manifest via service worker
-# works on Squarespace, Wix, Webflow — any locked platform</span></pre></div>
-      </div>
-      <div class="pnl" id="p-dns">
-        <div class="cb"><div class="cb-hd"><div class="cb-l"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="fname">DNS — zero code, any host</span></div><span class="cbadge">Zero touch</span></div>
-        <pre><span class="c"># add one CNAME record</span>
-<span class="w">_w2a.yoursite.com  CNAME  edge.w2a-protocol.org</span>
-
-<span class="c"># W2A edge network intercepts agent requests
-# crawls your site once, builds and caches the manifest
-# your origin server never sees agent traffic again</span></pre></div>
-      </div>
+      <div style="font-size:12px;font-weight:300;color:var(--text3);margin-top:.6rem">CLI, script tag, and DNS installs are coming. <a href="https://github.com/Nijjwol23/w2a/discussions" target="_blank" style="color:var(--accent);text-decoration:none">Follow the repo</a> for updates.</div>
     </div>
   </div>
 </section>
@@ -399,7 +394,7 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem}
     <div class="tl">
       <div class="trow"><div class="tyr">1994</div><div class="tdot"></div><div><div class="tfile">robots.txt</div><div class="tdesc">Told crawlers what not to index</div></div></div>
       <div class="trow"><div class="tyr">2005</div><div class="tdot"></div><div><div class="tfile">sitemap.xml</div><div class="tdesc">Told crawlers where pages are</div></div></div>
-      <div class="trow now"><div class="tyr">2025</div><div class="tdot"></div><div><div class="tfile">agents.json</div><div class="tdesc">Tells agents what a site can do</div></div></div>
+      <div class="trow now"><div class="tyr">2026</div><div class="tdot"></div><div><div class="tfile">agents.json</div><div class="tdesc">Tells agents what a site can do</div></div></div>
     </div>
   </div>
 </section>
