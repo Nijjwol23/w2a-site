@@ -40,10 +40,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;ali
 .page-header{padding:100px 2rem 48px;max-width:760px;margin:0 auto}
 .page-header .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:1rem}
 .page-header h1{font-size:clamp(2rem,5vw,3rem);font-weight:600;letter-spacing:-.025em;line-height:1.1;margin-bottom:.75rem}
-.page-header p{font-size:16px;font-weight:300;color:var(--text2);line-height:1.75}
+.page-header p{font-size:16px;font-weight:300;color:var(--text2);line-height:1.75;opacity:0.9}
 
 .mode-tabs{display:flex;gap:2px;margin-bottom:2rem}
-.mode-tab{flex:1;font-family:var(--mono);font-size:13px;font-weight:400;padding:11px 0;background:var(--bg2);color:var(--text3);border:1px solid var(--border2);cursor:pointer;transition:all .15s;letter-spacing:.02em}
+.mode-tab{flex:1;font-family:var(--mono);font-size:13px;font-weight:400;padding:11px 0;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);cursor:pointer;transition:all .15s;letter-spacing:.02em}
 .mode-tab:first-child{border-radius:var(--r) 0 0 var(--r)}
 .mode-tab:last-child{border-radius:0 var(--r) var(--r) 0}
 .mode-tab.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-bd)}
@@ -52,13 +52,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;ali
 .panel{display:none}.panel.on{display:block}
 
 .field{margin-bottom:1.5rem}
-.field label{display:block;font-family:var(--mono);font-size:12px;color:var(--text3);margin-bottom:.5rem;letter-spacing:.04em;text-transform:uppercase}
-.field input,.field select,.field textarea{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:13px;padding:10px 14px;outline:none;transition:border-color .15s}
+.field label{display:block;font-family:var(--mono);font-size:12px;color:var(--text2);margin-bottom:.5rem;letter-spacing:.04em;text-transform:uppercase}
+.field input,.field select,.field textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:13px;padding:10px 14px;outline:none;transition:border-color .15s}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent-bd)}
-.field input::placeholder,.field textarea::placeholder{color:var(--text4)}
+.field input::placeholder,.field textarea::placeholder{color:var(--text3)}
 .field select option{background:var(--bg3)}
 .field textarea{resize:vertical;min-height:280px;line-height:1.7}
-.field-hint{font-size:12px;color:var(--text4);margin-top:.4rem;font-weight:300}
+.field-hint{font-size:12px;color:var(--text3);margin-top:.4rem;font-weight:300}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--sans);font-size:14px;font-weight:500;padding:10px 24px;border-radius:var(--r);border:none;cursor:pointer;transition:all .15s;width:100%}
 .btn-blue{background:var(--accent);color:#fff}
@@ -69,7 +69,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;ali
 
 .result{margin-top:2rem;border-radius:var(--rl);overflow:hidden;border:1px solid var(--border2)}
 .result-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-bottom:1px solid var(--border)}
-.result-title{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.result-title{font-family:var(--mono);font-size:12px;color:var(--text)}
 .result-actions{display:flex;gap:8px}
 .result-btn{font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:4px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s}
 .result-btn:hover{border-color:var(--border3);color:var(--text)}
@@ -97,7 +97,7 @@ pre.result-code{padding:1.25rem 1.5rem;font-family:var(--mono);font-size:12.5px;
 .example-btn:hover{border-color:var(--accent-bd);color:var(--accent);background:var(--accent-bg)}
 .sig-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;flex-shrink:0}
 .sig-green{background:#22C55E}.sig-amber{background:#FCD34D}.sig-red{background:#F87171}
-.counter-bar{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);padding:1rem 1.5rem;margin-bottom:2rem;display:flex;align-items:center;justify-content:space-between}
+.counter-bar{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rl);padding:1rem 1.5rem;margin-bottom:2rem;display:flex;align-items:center;justify-content:space-between}
 .counter-num{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--accent)}
 .counter-lbl{font-size:13px;font-weight:300;color:var(--text3)}
 .adopter-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:1rem}
@@ -116,14 +116,14 @@ pre.result-code{padding:1.25rem 1.5rem;font-family:var(--mono);font-size:12.5px;
 .sep{border:none;border-top:1px solid var(--border);margin:2.5rem 0}
 
 .site-type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.type-btn{font-family:var(--mono);font-size:12px;padding:8px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg2);color:var(--text3);cursor:pointer;transition:all .15s;text-align:center}
-.type-btn:hover{border-color:var(--border3);color:var(--text2)}
+.type-btn{font-family:var(--mono);font-size:12px;padding:8px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .15s;text-align:center}
+.type-btn:hover{border-color:var(--border3);color:var(--text)}
 .type-btn.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent-bd)}
 
 .check-result{border:1px solid var(--border2);border-radius:var(--rl);overflow:hidden;margin-top:1.5rem}
 .check-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px}
 .check-row:last-child{border-bottom:none}
-.check-label{font-family:var(--mono);font-size:12px;color:var(--text3)}
+.check-label{font-family:var(--mono);font-size:12px;color:var(--text2)}
 .check-val{font-family:var(--mono);font-size:12px;font-weight:500}
 .yes{color:var(--green)}.no{color:var(--red)}.na{color:var(--text3)}
 
@@ -182,6 +182,11 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem;margin-top:5rem}
       <div class="counter-lbl">manifests generated this week</div>
       <div style="font-family:var(--mono);font-size:10px;color:var(--text4);margin-top:3px;letter-spacing:.04em">updated live · last 7 days</div>
     </div>
+    <div style="text-align:center">
+      <div class="counter-num" id="enabled-counter">1</div>
+      <div class="counter-lbl">sites enabled</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-top:3px;letter-spacing:.04em">be next →</div>
+    </div>
     <div style="text-align:right">
       <div class="counter-num" id="check-counter">—</div>
       <div class="counter-lbl">sites checked today</div>
@@ -212,7 +217,7 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem;margin-top:5rem}
       <input type="url" id="gen-url" placeholder="https://yoursite.com" autocomplete="off" spellcheck="false">
       <div class="field-hint">We'll read your existing Schema.org, Open Graph, and sitemap signals to build the manifest.</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.75rem">
-        <span style="font-size:12px;font-weight:300;color:var(--text4);align-self:center">Try these examples:</span>
+        <span style="font-size:12px;font-weight:500;color:var(--text2);align-self:center;letter-spacing:.01em">Try:</span>
         <button onclick="tryExample('petstore.swagger.io','api')" class="example-btn">petstore.swagger.io</button>
         <button onclick="tryExample('w2a-protocol.org','api')" class="example-btn">w2a-protocol.org</button>
         <button onclick="tryExample('httpbin.org','api')" class="example-btn">httpbin.org</button>
