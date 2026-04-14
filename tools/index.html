@@ -100,7 +100,8 @@ pre.result-code{padding:1.25rem 1.5rem;font-family:var(--mono);font-size:12.5px;
 .counter-bar{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);padding:1rem 1.5rem;margin-bottom:2rem;display:flex;align-items:center;justify-content:space-between}
 .counter-num{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--accent)}
 .counter-lbl{font-size:13px;font-weight:300;color:var(--text3)}
-.adopter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:1rem}
+.adopter-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:1rem}
+.adopter-card{flex:0 0 auto}
 .adopter-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:.75rem 1rem;font-family:var(--mono);font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px}
 .adopter-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
 .skill-editor{margin-top:1.5rem}
@@ -117,7 +118,7 @@ pre.result-code{padding:1.25rem 1.5rem;font-family:var(--mono);font-size:12.5px;
 .site-type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .type-btn{font-family:var(--mono);font-size:12px;padding:8px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg2);color:var(--text3);cursor:pointer;transition:all .15s;text-align:center}
 .type-btn:hover{border-color:var(--border3);color:var(--text2)}
-.type-btn.on{background:var(--accent-bg);border-color:var(--accent-bd);color:var(--accent)}
+.type-btn.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent-bd)}
 
 .check-result{border:1px solid var(--border2);border-radius:var(--rl);overflow:hidden;margin-top:1.5rem}
 .check-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px}
@@ -179,10 +180,12 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem;margin-top:5rem}
     <div>
       <div class="counter-num" id="gen-counter">—</div>
       <div class="counter-lbl">manifests generated this week</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text4);margin-top:3px;letter-spacing:.04em">updated live · last 7 days</div>
     </div>
     <div style="text-align:right">
       <div class="counter-num" id="check-counter">—</div>
       <div class="counter-lbl">sites checked today</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--green);margin-top:3px;letter-spacing:.04em">↑ growing</div>
     </div>
   </div>
 
@@ -209,7 +212,7 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem;margin-top:5rem}
       <input type="url" id="gen-url" placeholder="https://yoursite.com" autocomplete="off" spellcheck="false">
       <div class="field-hint">We'll read your existing Schema.org, Open Graph, and sitemap signals to build the manifest.</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.75rem">
-        <span style="font-family:var(--mono);font-size:11px;color:var(--text4);align-self:center;letter-spacing:.04em;text-transform:uppercase">Try:</span>
+        <span style="font-size:12px;font-weight:300;color:var(--text4);align-self:center">Try these examples:</span>
         <button onclick="tryExample('petstore.swagger.io','api')" class="example-btn">petstore.swagger.io</button>
         <button onclick="tryExample('w2a-protocol.org','api')" class="example-btn">w2a-protocol.org</button>
         <button onclick="tryExample('httpbin.org','api')" class="example-btn">httpbin.org</button>
@@ -238,7 +241,7 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem;margin-top:5rem}
     <div id="gen-result" style="display:none">
       <div class="result">
         <div class="result-header">
-          <span class="result-title">/.well-known/agents.json</span>
+          <span class="result-title">Your generated agents.json</span>
           <div class="result-actions">
             <button class="result-btn" onclick="copyResult('gen-code', this)">Copy</button>
             <button class="result-btn" onclick="downloadResult()">Download</button>
@@ -377,6 +380,7 @@ async function generate() {
     document.getElementById('gen-code').textContent = JSON.stringify(data.manifest, null, 2);
     document.getElementById('gen-result').style.display = 'block';
     document.getElementById('gen-install').style.display = 'block';
+    setTimeout(() => document.getElementById('gen-note').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     document.getElementById('gen-label').textContent = 'Regenerate';
     populateSkillEditor(data.manifest.skills || []);
     document.getElementById('skill-editor').style.display = 'block';
