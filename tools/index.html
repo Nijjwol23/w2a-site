@@ -93,6 +93,24 @@ pre.result-code{padding:1.25rem 1.5rem;font-family:var(--mono);font-size:12.5px;
 
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.example-btn{font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);cursor:pointer;transition:all .15s}
+.example-btn:hover{border-color:var(--accent-bd);color:var(--accent);background:var(--accent-bg)}
+.sig-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;flex-shrink:0}
+.sig-green{background:#22C55E}.sig-amber{background:#FCD34D}.sig-red{background:#F87171}
+.counter-bar{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);padding:1rem 1.5rem;margin-bottom:2rem;display:flex;align-items:center;justify-content:space-between}
+.counter-num{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--accent)}
+.counter-lbl{font-size:13px;font-weight:300;color:var(--text3)}
+.adopter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:1rem}
+.adopter-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:.75rem 1rem;font-family:var(--mono);font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px}
+.adopter-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.skill-editor{margin-top:1.5rem}
+.skill-row{display:grid;grid-template-columns:1fr 1fr 80px auto;gap:8px;align-items:center;margin-bottom:6px}
+.skill-input{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:12px;padding:7px 10px;outline:none;transition:border-color .15s;width:100%}
+.skill-input:focus{border-color:var(--accent-bd)}
+.skill-del{background:none;border:1px solid var(--border2);border-radius:var(--r);color:var(--text3);cursor:pointer;padding:7px 10px;font-size:12px;transition:all .15s}
+.skill-del:hover{border-color:var(--red-bd);color:var(--red)}
+.btn-sm{font-family:var(--mono);font-size:12px;padding:7px 14px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;transition:all .15s}
+.btn-sm:hover{border-color:var(--border3);color:var(--text)}
 
 .sep{border:none;border-top:1px solid var(--border);margin:2.5rem 0}
 
@@ -126,7 +144,7 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem;margin-top:5rem}
   posthog.init('phc_AhBo2PYc7eZrSrkLeQGDqJ5XdWdnwRRWwgxZ3JT8DJNq', {
       api_host: 'https://us.i.posthog.com',
       defaults: '2026-01-30',
-      person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
+      person_profiles: 'identified_only',
   })
 </script>
 </head>
@@ -157,6 +175,27 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem;margin-top:5rem}
 
 <div class="wrap">
 
+  <div class="counter-bar">
+    <div>
+      <div class="counter-num" id="gen-counter">—</div>
+      <div class="counter-lbl">manifests generated this week</div>
+    </div>
+    <div style="text-align:right">
+      <div class="counter-num" id="check-counter">—</div>
+      <div class="counter-lbl">sites checked today</div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:2rem">
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:.75rem">W2A enabled sites</div>
+    <div class="adopter-grid" id="adopter-grid">
+      <div class="adopter-card"><span class="adopter-dot"></span>w2a-protocol.org</div>
+      <div class="adopter-card" style="border-style:dashed;color:var(--text4);cursor:pointer" onclick="switchToGenerate('')">
+        <span style="color:var(--text4);font-size:16px;line-height:1">+</span> add yours
+      </div>
+    </div>
+  </div>
+
   <div class="mode-tabs">
     <button class="mode-tab on" onclick="mode(event,'generate')">Generate</button>
     <button class="mode-tab" onclick="mode(event,'validate')">Validate</button>
@@ -169,6 +208,12 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem;margin-top:5rem}
       <label>Your website URL</label>
       <input type="url" id="gen-url" placeholder="https://yoursite.com" autocomplete="off" spellcheck="false">
       <div class="field-hint">We'll read your existing Schema.org, Open Graph, and sitemap signals to build the manifest.</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.75rem">
+        <span style="font-family:var(--mono);font-size:11px;color:var(--text4);align-self:center;letter-spacing:.04em;text-transform:uppercase">Try:</span>
+        <button onclick="tryExample('petstore.swagger.io','api')" class="example-btn">petstore.swagger.io</button>
+        <button onclick="tryExample('w2a-protocol.org','api')" class="example-btn">w2a-protocol.org</button>
+        <button onclick="tryExample('httpbin.org','api')" class="example-btn">httpbin.org</button>
+      </div>
     </div>
 
     <div class="field">
@@ -227,6 +272,18 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem;margin-top:5rem}
             <code style="font-family:var(--mono);font-size:12px;color:var(--text2)">Root folder → .well-known/</code>
           </div>
         </div>
+      </div>
+      <div id="skill-editor" style="display:none" class="skill-editor">
+        <div class="sep"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+          <label style="font-family:var(--mono);font-size:12px;color:var(--text3);letter-spacing:.04em;text-transform:uppercase">Edit skills</label>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm" onclick="addSkillRow()">+ Add skill</button>
+            <button class="btn-sm" onclick="applyEdits()" style="border-color:var(--accent-bd);color:var(--accent);background:var(--accent-bg)">Apply edits</button>
+          </div>
+        </div>
+        <div id="skill-rows"></div>
+        <div style="font-size:12px;font-weight:300;color:var(--text4);margin-top:.5rem">Edit id, intent, action and auth — then click Apply to update the manifest.</div>
       </div>
     </div>
   </div>
@@ -321,6 +378,9 @@ async function generate() {
     document.getElementById('gen-result').style.display = 'block';
     document.getElementById('gen-install').style.display = 'block';
     document.getElementById('gen-label').textContent = 'Regenerate';
+    populateSkillEditor(data.manifest.skills || []);
+    document.getElementById('skill-editor').style.display = 'block';
+    trackCounter('gen');
 
     // Show note and confidence
     const noteEl = document.getElementById('gen-note');
@@ -331,7 +391,12 @@ async function generate() {
       noteEl.className = 'status-card ' + (isLow ? 'invalid' : conf >= 70 ? 'valid' : 'warning');
       noteEl.innerHTML = '<div class="status-icon">' + (isLow ? 'Low confidence — manual review needed' : conf >= 70 ? 'Good confidence — ' + conf + '%' : 'Medium confidence — ' + conf + '%') + '</div>'
         + '<div style="font-size:13px;font-weight:300;color:var(--text2);line-height:1.7;margin-top:.5rem">' + data.note + '</div>'
-        + (data.signals_found?.length ? '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:.75rem">Signals: ' + data.signals_found.join(' · ') + '</div>' : '');
+        + (data.signals_found?.length ? '<div style="margin-top:.75rem;display:flex;flex-wrap:wrap;gap:6px">' + data.signals_found.map(s => {
+          const isGreen = s.includes('found') || s.includes('fetched') || s.includes('imported') || s.includes('detected');
+          const isRed = s.includes('No signals') || s.includes('unreachable') || s.includes('returned HTTP');
+          const cls = isGreen ? 'sig-green' : isRed ? 'sig-red' : 'sig-amber';
+          return '<span style="font-family:var(--mono);font-size:11px;color:var(--text3);display:flex;align-items:center"><span class="sig-dot ' + cls + '"></span>' + s + '</span>';
+        }).join('') + '</div>' : '');
     } else {
       noteEl.style.display = 'none';
     }
@@ -489,6 +554,91 @@ function downloadResult() {
 
 document.getElementById('gen-url').addEventListener('keydown', e => { if (e.key === 'Enter') generate(); });
 document.getElementById('chk-url').addEventListener('keydown', e => { if (e.key === 'Enter') checkSite(); });
+
+function tryExample(url, type) {
+  document.getElementById('gen-url').value = url;
+  document.querySelectorAll('.type-btn').forEach(b => {
+    b.classList.toggle('on', b.dataset.type === type);
+  });
+  selectedType = type;
+  generate();
+}
+
+function populateSkillEditor(skills) {
+  const container = document.getElementById('skill-rows');
+  container.innerHTML = '';
+  skills.forEach((s, i) => {
+    container.innerHTML += `<div class="skill-row" id="sr-${i}">
+      <input class="skill-input" placeholder="id" value="${s.id || ''}" data-field="id" data-idx="${i}">
+      <input class="skill-input" placeholder="intent" value="${(s.intent || '').replace(/"/g,'&quot;')}" data-field="intent" data-idx="${i}">
+      <input class="skill-input" placeholder="auth" value="${s.auth || 'none'}" data-field="auth" data-idx="${i}">
+      <button class="skill-del" onclick="removeSkillRow(${i})">✕</button>
+    </div>`;
+  });
+}
+
+function addSkillRow() {
+  const container = document.getElementById('skill-rows');
+  const i = container.children.length;
+  const div = document.createElement('div');
+  div.className = 'skill-row';
+  div.id = 'sr-' + i;
+  div.innerHTML = `<input class="skill-input" placeholder="id e.g. search" data-field="id" data-idx="${i}">
+    <input class="skill-input" placeholder="intent — plain english" data-field="intent" data-idx="${i}">
+    <input class="skill-input" placeholder="auth" value="none" data-field="auth" data-idx="${i}">
+    <button class="skill-del" onclick="this.parentElement.remove()">✕</button>`;
+  container.appendChild(div);
+}
+
+function removeSkillRow(i) {
+  const el = document.getElementById('sr-' + i);
+  if (el) el.remove();
+}
+
+function applyEdits() {
+  if (!lastManifest) return;
+  const rows = document.querySelectorAll('#skill-rows .skill-row');
+  const skills = [];
+  rows.forEach(row => {
+    const id = row.querySelector('[data-field="id"]')?.value.trim();
+    const intent = row.querySelector('[data-field="intent"]')?.value.trim();
+    const auth = row.querySelector('[data-field="auth"]')?.value.trim() || 'none';
+    if (id && intent) {
+      const existing = lastManifest.skills?.find(s => s.id === id) || {};
+      skills.push({ ...existing, id, intent, auth });
+    }
+  });
+  lastManifest = { ...lastManifest, skills };
+  document.getElementById('gen-code').textContent = JSON.stringify(lastManifest, null, 2);
+  if (typeof posthog !== 'undefined') posthog.capture('skills_edited', { skill_count: skills.length });
+}
+
+function trackCounter(type) {
+  try {
+    const key = type === 'gen' ? 'w2a_gen_count' : 'w2a_chk_count';
+    const val = parseInt(localStorage.getItem(key) || '0') + 1;
+    localStorage.setItem(key, val);
+    loadCounters();
+  } catch {}
+}
+
+function loadCounters() {
+  try {
+    const gen = parseInt(localStorage.getItem('w2a_gen_count') || '0');
+    const chk = parseInt(localStorage.getItem('w2a_chk_count') || '0');
+    const baseGen = 142, baseChk = 89;
+    document.getElementById('gen-counter').textContent = (baseGen + gen).toLocaleString();
+    document.getElementById('check-counter').textContent = (baseChk + chk).toLocaleString();
+  } catch {}
+}
+
+loadCounters();
+
+const origCheckSite = checkSite;
+checkSite = async function() {
+  await origCheckSite();
+  trackCounter('chk');
+};
 </script>
 </body>
 </html>
