@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Agent Discovery Problem — W2A Protocol</title>
+<meta name="description" content="There is a bug in how we're building the agentic web. AI agents visiting websites today crawl 40-50 pages blind before they can act. This is the fix.">
+<meta property="og:title" content="The Agent Discovery Problem">
+<meta property="og:description" content="A single file at /.well-known/agents.json tells any AI agent what your site can do. Here's why it matters.">
+<meta property="og:url" content="https://w2a-protocol.org/blog/agent-discovery-problem">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Agent Discovery Problem — W2A Protocol">
+<meta name="twitter:description" content="AI agents crawl 40-50 pages blind before they understand what your site does. There's a fix.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090B;--bg2:#0F0F12;--bg3:#141418;--bg4:#1C1C22;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);--border3:rgba(255,255,255,0.18);
+  --text:#FFFFFF;--text2:#D4D4D8;--text3:#A1A1AA;--text4:#52525B;
+  --accent:#3B7BF8;--accent-h:#2563EB;
+  --accent-bg:rgba(59,123,248,0.07);--accent-bd:rgba(59,123,248,0.22);
+  --green:#22C55E;--red:#F87171;--amber:#FCD34D;
+  --sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --r:6px;--rl:10px;
+  --prose-width:680px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;align-items:center;padding:0 2rem;background:rgba(9,9,11,0.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-i{max-width:1080px;width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px}
+.nav-v{font-size:10px;color:var(--text3);background:var(--bg3);border:1px solid var(--border2);padding:2px 7px;border-radius:4px;letter-spacing:.04em}
+.nav-links{display:flex;align-items:center;gap:1.5rem}
+.nav-links a{font-size:13px;color:var(--text2);text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--text)}
+.nav-gh{display:flex!important;align-items:center;gap:6px;color:var(--text)!important;background:var(--bg3);border:1px solid var(--border2)!important;padding:5px 14px;border-radius:var(--r)}
+
+.article-wrap{max-width:var(--prose-width);margin:0 auto;padding:0 2rem}
+
+.article-header{padding:100px 0 56px}
+.back{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--text3);text-decoration:none;margin-bottom:2rem;transition:color .15s}
+.back:hover{color:var(--text2)}
+.back svg{width:14px;height:14px}
+.article-meta{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.meta-tag{font-family:var(--mono);font-size:11px;color:var(--accent);background:var(--accent-bg);border:1px solid var(--accent-bd);padding:3px 10px;border-radius:20px;letter-spacing:.05em}
+.meta-date{font-family:var(--mono);font-size:12px;color:var(--text4)}
+.meta-read{font-family:var(--mono);font-size:12px;color:var(--text4)}
+.meta-dot{color:var(--text4)}
+h1.article-title{font-size:clamp(2rem,5vw,3.25rem);font-weight:600;letter-spacing:-.03em;line-height:1.08;color:var(--text);margin-bottom:1.25rem}
+.article-lede{font-size:1.125rem;font-weight:300;color:var(--text2);line-height:1.75;border-left:2px solid var(--accent);padding-left:1.25rem;margin-bottom:0}
+
+.article-body{padding-bottom:80px}
+.article-body h2{font-size:1.375rem;font-weight:600;letter-spacing:-.02em;color:var(--text);margin:3rem 0 1rem;line-height:1.3}
+.article-body h2:first-child{margin-top:3rem}
+.article-body p{color:var(--text2);font-weight:300;margin-bottom:1.25rem;line-height:1.8}
+.article-body p strong{color:var(--text);font-weight:500}
+.article-body p em{color:var(--text3);font-style:italic}
+.article-body ul,.article-body ol{color:var(--text2);font-weight:300;margin-bottom:1.25rem;padding-left:1.5rem}
+.article-body li{margin-bottom:.4rem;line-height:1.75}
+.article-body li strong{color:var(--text);font-weight:500}
+
+pre{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rl);padding:1.25rem 1.5rem;overflow-x:auto;margin:1.5rem 0;font-family:var(--mono);font-size:13px;line-height:1.75;color:var(--text2)}
+pre .c{color:var(--text4)}
+pre .k{color:#7DD3FC}
+pre .s{color:#86EFAC}
+pre .n{color:#FCA5A5}
+code{font-family:var(--mono);font-size:.875em;color:var(--accent);background:var(--accent-bg);border:1px solid var(--accent-bd);padding:1px 6px;border-radius:4px}
+pre code{font-size:inherit;color:inherit;background:none;border:none;padding:0}
+
+.stack-diagram{border:1px solid var(--border2);border-radius:var(--rl);overflow:hidden;margin:1.75rem 0;font-family:var(--mono);font-size:13px}
+.stack-row{display:grid;grid-template-columns:200px 1fr;align-items:stretch;border-bottom:1px solid var(--border)}
+.stack-row:last-child{border-bottom:none}
+.stack-label{padding:12px 16px;color:var(--text3);border-right:1px solid var(--border);background:var(--bg2);display:flex;align-items:center}
+.stack-row.hl .stack-label{color:var(--accent);background:var(--accent-bg);border-right-color:var(--accent-bd)}
+.stack-desc{padding:12px 16px;color:var(--text2);background:var(--bg3);display:flex;flex-direction:column;justify-content:center;gap:2px}
+.stack-row.hl .stack-desc{background:rgba(59,123,248,0.04)}
+.stack-sub{font-size:11px;color:var(--text4)}
+.stack-row.hl .stack-sub{color:rgba(59,123,248,0.6)}
+
+.check-table{border:1px solid var(--border2);border-radius:var(--rl);overflow:hidden;margin:1.75rem 0;font-family:var(--mono);font-size:13px}
+.ct-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg3)}
+.ct-row:last-child{border-bottom:none}
+.ct-row.pass{background:rgba(34,197,94,0.04)}
+.ct-site{color:var(--text2)}
+.ct-status{font-weight:500}
+.ct-row.fail .ct-status{color:var(--red)}
+.ct-row.pass .ct-status{color:var(--green)}
+
+.callout{background:var(--bg3);border:1px solid var(--border2);border-left:3px solid var(--accent);border-radius:0 var(--rl) var(--rl) 0;padding:1.25rem 1.5rem;margin:1.75rem 0}
+.callout p{margin-bottom:0;color:var(--text2)}
+.callout strong{color:var(--text)}
+
+.aside-gap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:1.25rem 1.5rem;margin:1.75rem 0}
+.aside-gap .aside-label{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text4);margin-bottom:.6rem}
+.aside-gap p{color:var(--text3);font-size:14px;margin-bottom:0}
+
+.sep{border:none;border-top:1px solid var(--border);margin:3rem 0}
+
+.cta-box{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rl);padding:2rem;margin-top:2.5rem;text-align:center}
+.cta-box h3{font-size:1.25rem;font-weight:600;letter-spacing:-.02em;margin-bottom:.5rem}
+.cta-box p{color:var(--text3);font-size:14px;font-weight:300;margin-bottom:1.5rem}
+.cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--mono);font-size:13px;padding:10px 28px;border-radius:var(--r);text-decoration:none;transition:background .15s}
+.cta-btn:hover{background:var(--accent-h)}
+.cta-secondary{display:inline-block;margin-left:1rem;font-family:var(--mono);font-size:13px;color:var(--text3);text-decoration:none;transition:color .15s}
+.cta-secondary:hover{color:var(--text2)}
+
+.article-footer{font-family:var(--mono);font-size:12px;color:var(--text4);border-top:1px solid var(--border);padding-top:1.5rem;margin-top:2.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+.article-footer a{color:var(--text3);text-decoration:none}
+.article-footer a:hover{color:var(--text2)}
+
+footer{border-top:1px solid var(--border);padding:1.75rem 2rem;margin-top:3rem}
+.ft{max-width:1080px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+.fl{font-family:var(--mono);font-size:12px;color:var(--text3)}
+.fl a{color:inherit;text-decoration:none}
+.fr{display:flex;gap:1.5rem}
+.fr a{font-size:13px;font-weight:300;color:var(--text3);text-decoration:none;transition:color .15s}
+.fr a:hover{color:var(--text2)}
+
+@media(max-width:600px){
+  .stack-diagram{font-size:12px}
+  .stack-row{grid-template-columns:140px 1fr}
+  .nav-links a:not(.nav-gh){display:none}
+  .cta-secondary{display:block;margin-left:0;margin-top:.75rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-i">
+    <a href="/" class="nav-logo">W2A <span class="nav-v">v0.1 · draft</span></a>
+    <div class="nav-links">
+      <a href="/#install">Install</a>
+      <a href="/#ecosystem">Ecosystem</a>
+      <a href="/#spec">Spec</a>
+      <a href="/tools">Tools</a>
+      <a href="https://github.com/Nijjwol23/w2a/discussions" target="_blank">Discussions</a>
+      <a href="https://github.com/Nijjwol23/w2a" class="nav-gh" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<div class="article-wrap">
+  <div class="article-header">
+    <a href="/" class="back">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 12L6 8l4-4"/></svg>
+      w2a-protocol.org
+    </a>
+    <div class="article-meta">
+      <span class="meta-tag">RESEARCH</span>
+      <span class="meta-dot">·</span>
+      <span class="meta-date">April 14, 2026</span>
+      <span class="meta-dot">·</span>
+      <span class="meta-read">12 min read</span>
+    </div>
+    <h1 class="article-title">The Agent Discovery Problem</h1>
+    <p class="article-lede">There is a bug in how we're building the agentic web. It's not in the models. It's not in the tooling. It's in an assumption so fundamental that almost nobody has named it yet.</p>
+  </div>
+
+  <div class="article-body">
+
+    <p>The assumption: that an AI agent visiting your website should figure out what your website does by reading it.</p>
+
+    <p>That sounds reasonable until you think about what "reading it" actually means at scale.</p>
+
+    <h2>What agents actually do when they visit your site</h2>
+
+    <p>Here's what happens when an AI agent — say, a shopping assistant helping someone find running shoes — encounters your ecommerce site for the first time:</p>
+
+    <p>It fetches your homepage. Gets HTML, parses text, discards markup. Doesn't find a structured product catalogue. Follows a few links. Loads product pages. Loads a category page. Tries a search. Parses the search results page. Makes 40–50 HTTP requests in a few seconds, each one loading your full page stack — HTML, JavaScript bundles, API calls, CDN assets — and using maybe 200 tokens of actual signal from all of it.</p>
+
+    <p>Then it does this again tomorrow when a different user asks the same question. And the day after. Every agent. Every time.</p>
+
+    <p>This isn't a hypothetical future problem. Cloudflare published data showing AI crawlers now drive over <strong>10 billion automated requests per week</strong>. Thirty-two percent of all web traffic is automated. The really telling number: AI crawlers have over <strong>90% unique URL ratios</strong>. Human traffic revisits pages — you reload your Twitter feed, you check your bank balance. AI crawlers don't. They hit every URL once and move on, which means they don't benefit from the caching infrastructure the entire web was built to rely on.</p>
+
+    <p>Your CDN is being billed. Your origin servers are being hit. Your cache is being churned. And the agent got back a few product names it could have gotten from a five-line JSON file.</p>
+
+    <h2>The standard the web built for this problem. Twice.</h2>
+
+    <p>We've been here before. The web has a track record of solving this kind of problem with a tiny file at a well-known path.</p>
+
+    <p><strong>1994. robots.txt.</strong> Web crawlers started hammering servers in ways their operators didn't intend. The response: a convention. Put a file at <code>/robots.txt</code>. Tell crawlers what not to touch. No authentication. No schema. No machine-readable capability declaration. Just a blocklist. It took 28 years to get ratified as RFC 9309 in 2022, by which point every search engine had already been following it for decades through sheer convention.</p>
+
+    <p><strong>2005. sitemap.xml.</strong> Search engines wanted a better signal for what existed on a site, instead of crawling everything and hoping. The response: another file. Put it at <code>/sitemap.xml</code>. Tell crawlers where your pages are. Again, no structured capability declaration. Just a map.</p>
+
+    <p>Both of these files answered a negative question. robots.txt says "don't go here." sitemap.xml says "these pages exist." Neither one answers the question an agent actually needs answered:</p>
+
+    <div class="callout">
+      <p><strong>"What can this site do?"</strong></p>
+    </div>
+
+    <h2>The approaches that got close but didn't solve it</h2>
+
+    <p>Before proposing W2A, it's worth being honest about what already exists and why each piece falls short.</p>
+
+    <p><strong>Schema.org JSON-LD</strong> is genuinely useful and W2A's generator reads it. If you embed <code>{"@type": "Product"}</code> JSON-LD on your pages, an agent can infer you sell things. But Schema.org is a vocabulary for describing what things <em>are</em>, not what a site can <em>do</em>. It has no concept of API endpoints, authentication requirements, rate limits, or machine-callable actions. A site with beautiful Schema.org markup is still opaque to an agent that wants to add something to a cart.</p>
+
+    <p><strong>OpenAPI/Swagger</strong> specs are excellent for developers integrating with an API. If you publish one, W2A will find it automatically and import your endpoints directly. But OpenAPI solves half the problem: it covers API-first sites and explicitly exposes API developers, but the 150 million WordPress sites, Shopify stores, blogs, and SaaS products in the world aren't publishing OpenAPI specs. They're not even thinking about it.</p>
+
+    <p><strong>llms.txt</strong> is a recent proposal that asks site owners to put a human-readable summary at <code>/llms.txt</code> for LLMs to read. Well-intentioned. But "human-readable summary for an LLM" is still just text. An agent reading it knows what your site is about but still can't call anything. It's documentation, not an interface.</p>
+
+    <p><strong>A2A's agent-card.json</strong> (Google's Agent2Agent protocol, now under the Linux Foundation) is the closest thing in the ecosystem to what W2A does, and it's important to be precise about the distinction. A2A's <code>/.well-known/agent-card.json</code> describes a running agent service — an AI with a JSON-RPC endpoint that other agents can send tasks to. It solves agent-to-agent communication. Your Stripe account doesn't have an A2A agent. Your Shopify store doesn't have one either. A2A is infrastructure for companies that have already built custom agents. W2A is for every website that hasn't and won't.</p>
+
+    <p><strong>MCP</strong> (Anthropic's Model Context Protocol) solves the tool layer. It lets agents connect to tools in a standardised way. It doesn't solve discovery of what a public website can do without prior setup from both sides.</p>
+
+    <div class="aside-gap">
+      <div class="aside-label">The gap</div>
+      <p>None of these answer the question from the perspective of a website owner with zero engineering resources who just wants agents to understand their site.</p>
+    </div>
+
+    <h2>The actual gap in the stack</h2>
+
+    <p>Draw the emerging agent-web protocol stack honestly:</p>
+
+    <div class="stack-diagram">
+      <div class="stack-row">
+        <div class="stack-label">Cloudflare edge</div>
+        <div class="stack-desc">request identity, rate limiting, payment (HTTP 402)
+          <span class="stack-sub">RFC 9421 · Pay Per Crawl · content negotiation</span>
+        </div>
+      </div>
+      <div class="stack-row hl">
+        <div class="stack-label">W2A</div>
+        <div class="stack-desc">discovery — what can this site do?
+          <span class="stack-sub">/.well-known/agents.json · open standard · Apache 2.0</span>
+        </div>
+      </div>
+      <div class="stack-row">
+        <div class="stack-label">A2A</div>
+        <div class="stack-desc">agent-to-agent communication
+          <span class="stack-sub">/.well-known/agent-card.json · Linux Foundation</span>
+        </div>
+      </div>
+      <div class="stack-row">
+        <div class="stack-label">MCP</div>
+        <div class="stack-desc">tool protocol
+          <span class="stack-sub">agent ↔ tools · Anthropic</span>
+        </div>
+      </div>
+      <div class="stack-row">
+        <div class="stack-label">Rover / CUA</div>
+        <div class="stack-desc">execution — acting on pages
+          <span class="stack-sub">DOM-native · screenshot-based · rtrvr.ai</span>
+        </div>
+      </div>
+      <div class="stack-row">
+        <div class="stack-label">HTTP / TLS</div>
+        <div class="stack-desc">transport
+          <span class="stack-sub">unchanged since 1991</span>
+        </div>
+      </div>
+    </div>
+
+    <p>W2A sits at the discovery layer. Before any execution happens, before any tool is called, before any agent-to-agent handoff — an agent checks what a site declares it can do. That's the layer that was missing.</p>
+
+    <h2>W2A: a single file at /.well-known/agents.json</h2>
+
+    <p>The design philosophy is deliberately boring. No new transport protocol. No authentication scheme. No agent runtime. One JSON file, served at a well-known path, following the same RFC 8615 convention that A2A and every other <code>.well-known/</code> standard uses.</p>
+
+    <p>Here's what it looks like for a real site:</p>
+
+<pre>{
+  <span class="k">"w2a"</span>: <span class="s">"1.0"</span>,
+  <span class="k">"site"</span>: {
+    <span class="k">"name"</span>: <span class="s">"Acme Store"</span>,
+    <span class="k">"type"</span>: <span class="s">"ecommerce"</span>,
+    <span class="k">"language"</span>: <span class="s">"en"</span>
+  },
+  <span class="k">"skills"</span>: [
+    {
+      <span class="k">"id"</span>: <span class="s">"search_products"</span>,
+      <span class="k">"intent"</span>: <span class="s">"Find products by keyword or category"</span>,
+      <span class="k">"action"</span>: <span class="s">"GET /api/search"</span>,
+      <span class="k">"input"</span>: { <span class="k">"q"</span>: <span class="s">"string"</span>, <span class="k">"category"</span>: <span class="s">"string?"</span> },
+      <span class="k">"output"</span>: { <span class="k">"items"</span>: <span class="s">"Product[]"</span>, <span class="k">"total"</span>: <span class="s">"int"</span> },
+      <span class="k">"auth"</span>: <span class="s">"none"</span>
+    },
+    {
+      <span class="k">"id"</span>: <span class="s">"add_to_cart"</span>,
+      <span class="k">"intent"</span>: <span class="s">"Add a product to the shopping cart"</span>,
+      <span class="k">"action"</span>: <span class="s">"POST /api/cart/items"</span>,
+      <span class="k">"input"</span>: { <span class="k">"sku"</span>: <span class="s">"string"</span>, <span class="k">"qty"</span>: <span class="s">"int"</span> },
+      <span class="k">"output"</span>: { <span class="k">"cart_id"</span>: <span class="s">"string"</span>, <span class="k">"subtotal"</span>: <span class="s">"float"</span> },
+      <span class="k">"auth"</span>: <span class="s">"session"</span>
+    }
+  ],
+  <span class="k">"policies"</span>: {
+    <span class="k">"rate_limit"</span>: <span class="s">"60/min"</span>,
+    <span class="k">"allowed_agents"</span>: [<span class="s">"*"</span>]
+  }
+}</pre>
+
+    <p>Before visiting anything else, an agent checks <code>/.well-known/agents.json</code>. It finds out what the site can do, which endpoints exist, what they expect, what they return, and whether they need authentication. One targeted call instead of fifty exploratory ones.</p>
+
+    <p><strong>The <code>intent</code> field is the most important design decision in the spec.</strong> It's not documentation. It's the signal an agent uses to decide which skill to invoke. Write it as a plain English description of what the action does, not what the endpoint is called. <code>"Find products by keyword or category"</code> is correct. <code>"Calls the search endpoint"</code> is useless.</p>
+
+    <h2>A2A compatibility without extra work</h2>
+
+    <p>The <code>agents.json</code> format includes an optional <code>a2a_profile</code> block that maps to a valid A2A AgentCard. Any A2A client — LangChain, any agent framework that supports A2A discovery — can read your <code>agents.json</code> and treat your site as a node in the A2A ecosystem without modification.</p>
+
+    <p>You don't build a custom agent. You don't run a JSON-RPC server. You serve one file and get A2A compatibility automatically.</p>
+
+<pre><span class="k">"a2a_profile"</span>: {
+  <span class="k">"name"</span>: <span class="s">"Acme Store Agent"</span>,
+  <span class="k">"url"</span>: <span class="s">"https://acme.com/.well-known/agents.json"</span>,
+  <span class="k">"version"</span>: <span class="s">"1.0"</span>,
+  <span class="k">"provider"</span>: { <span class="k">"organization"</span>: <span class="s">"Acme Inc"</span> },
+  <span class="k">"capabilities"</span>: {
+    <span class="k">"streaming"</span>: <span class="n">false</span>,
+    <span class="k">"pushNotifications"</span>: <span class="n">false</span>
+  },
+  <span class="k">"defaultInputModes"</span>: [<span class="s">"application/json"</span>],
+  <span class="k">"defaultOutputModes"</span>: [<span class="s">"application/json"</span>]
+}</pre>
+
+    <h2>The state of adoption right now</h2>
+
+    <p>Here's the honest picture. We checked the major platforms on April 14, 2026:</p>
+
+<pre><span class="c"># check any site for W2A support</span>
+curl <span class="s">"https://w2a-protocol.org/api/check?url=stripe.com"</span></pre>
+
+    <div class="check-table">
+      <div class="ct-row fail"><span class="ct-site">stripe.com</span><span class="ct-status">✗ not enabled</span></div>
+      <div class="ct-row fail"><span class="ct-site">shopify.com</span><span class="ct-status">✗ not enabled</span></div>
+      <div class="ct-row fail"><span class="ct-site">langchain.com</span><span class="ct-status">✗ not enabled</span></div>
+      <div class="ct-row fail"><span class="ct-site">vercel.com</span><span class="ct-status">✗ not enabled</span></div>
+      <div class="ct-row fail"><span class="ct-site">openai.com</span><span class="ct-status">✗ not enabled</span></div>
+      <div class="ct-row fail"><span class="ct-site">anthropic.com</span><span class="ct-status">✗ not enabled</span></div>
+      <div class="ct-row fail"><span class="ct-site">huggingface.co</span><span class="ct-status">✗ not enabled</span></div>
+      <div class="ct-row fail"><span class="ct-site">github.com</span><span class="ct-status">✗ not enabled</span></div>
+      <div class="ct-row pass"><span class="ct-site">w2a-protocol.org</span><span class="ct-status">✓ valid · 6 skills · A2A compatible</span></div>
+    </div>
+
+    <p>The only site on the internet with a valid <code>agents.json</code> right now is the one that defined the spec. This is not embarrassing — it's the natural state of any protocol in its first days. robots.txt was also only on one server in 1994. The question is whether the problem is real enough that adoption follows.</p>
+
+    <p>The signals say yes. An AWS engineer asked to circulate it internally the same day it launched. An independent analysis from Grok described it as "absolutely needed." <code>@b_kalisetty</code> from rtrvr.ai published a research paper this month saying "nobody built the layer that gives websites a say" — the day before W2A went live.</p>
+
+    <h2>Generating one in 30 seconds</h2>
+
+    <p>The barrier to adoption has to be zero. That's why we built a generator at <a href="https://w2a-protocol.org/tools" style="color:var(--accent)">w2a-protocol.org/tools</a>.</p>
+
+    <p>Enter your URL. The generator fetches your homepage, reads Schema.org JSON-LD blocks, reads Open Graph tags, probes 24 common OpenAPI/Swagger paths, detects embedded Swagger UI spec URLs, parses your sitemap for URL patterns, and reads HTML forms. If your site has an OpenAPI spec — even one you didn't actively publish — the generator finds it.</p>
+
+    <p>We tested it on <code>petstore.swagger.io</code>: 8 real endpoints from the Swagger spec, correct HTTP methods, typed inputs, proper auth, at 92% confidence. No manual authoring.</p>
+
+    <p>For sites with no machine-readable signals, the generator returns a skeleton with a clear confidence score and specific instructions. It doesn't silently hallucinate endpoints.</p>
+
+    <h2>What we're not solving</h2>
+
+    <p>Honesty here matters more than hype.</p>
+
+    <p><strong>Authentication flows.</strong> The <code>auth</code> field declares what kind of auth a skill needs. It does not handle the credential exchange. The agent still needs to obtain credentials through whatever mechanism the site provides.</p>
+
+    <p><strong>Dynamic capabilities.</strong> Right now, <code>agents.json</code> is a static file. A site whose available actions change based on the logged-in user can't fully express that. Federation via the <code>federation</code> block is a path toward it.</p>
+
+    <p><strong>Enforcement.</strong> An agent can ignore <code>agents.json</code> the same way a bot can ignore <code>robots.txt</code>. W2A is a declaration protocol for well-behaved agents, not a firewall.</p>
+
+    <hr class="sep">
+
+    <h2>Get involved</h2>
+
+    <p>The spec is at <a href="https://github.com/Nijjwol23/w2a" style="color:var(--accent)" target="_blank">github.com/Nijjwol23/w2a</a>. Apache 2.0, same license as A2A — intentionally. Open standard, no single company owns it.</p>
+
+    <p>The live proposal is in the <a href="https://github.com/a2aproject/A2A/discussions" style="color:var(--accent)" target="_blank">A2A GitHub discussions</a>. The question for the A2A community: should W2A register <code>/.well-known/agents.json</code> as a companion discovery mechanism in the A2A ecosystem?</p>
+
+    <p>The web got its crawler layer in 1994. Its search layer in 2005. The agent layer is being built right now. This is your chance to be in the first commit.</p>
+
+    <div class="cta-box">
+      <h3>Add agents.json to your site</h3>
+      <p>Enter your URL, generate your manifest, deploy one file. Under two minutes.</p>
+      <a href="/tools" class="cta-btn">Open the generator</a>
+      <a href="https://github.com/Nijjwol23/w2a" class="cta-secondary" target="_blank">Read the spec →</a>
+    </div>
+
+    <div class="article-footer">
+      <span>W2A Protocol v0.1 · Apache 2.0 · April 2026</span>
+      <div style="display:flex;gap:1.25rem">
+        <a href="https://w2a-protocol.org" target="_blank">w2a-protocol.org</a>
+        <a href="https://github.com/Nijjwol23/w2a" target="_blank">github.com/Nijjwol23/w2a</a>
+        <a href="https://x.com/oai_official" target="_blank">@oai_official</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="ft">
+    <div class="fl">W2A Protocol · Apache 2.0 · <a href="https://github.com/Nijjwol23" target="_blank">@Nijjwol23</a></div>
+    <div class="fr">
+      <a href="https://github.com/Nijjwol23/w2a" target="_blank">GitHub</a>
+      <a href="https://github.com/Nijjwol23/w2a/blob/main/spec/v0.1.md" target="_blank">Spec</a>
+      <a href="https://a2a-protocol.org" target="_blank">A2A</a>
+      <a href="https://modelcontextprotocol.io" target="_blank">MCP</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
