@@ -169,6 +169,62 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem}
   .hero h1{font-size:2.4rem}
   .hero-ctas{flex-wrap:wrap}
 }
+
+/* PERSONA CARDS */
+.persona-card{
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:var(--rl);
+  padding:1.5rem;
+  cursor:pointer;
+  transition:background .15s,transform .15s,border-color .15s;
+  display:flex;
+  flex-direction:column;
+  gap:.6rem;
+}
+.persona-card:hover{background:var(--bg3);transform:translateY(-2px)}
+.persona-icon{
+  width:40px;height:40px;
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-bottom:.1rem;
+}
+.persona-title{
+  font-size:15px;font-weight:500;
+  color:var(--text);
+  letter-spacing:-.01em;
+  line-height:1.3;
+}
+.persona-desc{
+  font-size:13px;font-weight:300;
+  color:var(--text3);
+  line-height:1.65;
+  flex:1;
+}
+.persona-action{
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:500;
+  letter-spacing:.01em;
+  margin-top:.1rem;
+}
+.persona-section-label{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--text4);
+  text-align:center;
+  margin-bottom:.5rem;
+}
+.persona-section-sub{
+  font-size:14px;
+  font-weight:300;
+  color:var(--text3);
+  text-align:center;
+  margin-bottom:2rem;
+  line-height:1.6;
+}
 </style>
 <script>
   !function(t,e){var o,n,p,r;e.__SV||(window.posthog && window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init Dr qr Ci Br Zr Pr capture calculateEventProperties Ur register register_once register_for_session unregister unregister_for_session Xr getFeatureFlag getFeatureFlagPayload getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey displaySurvey cancelPendingSurvey canRenderSurvey canRenderSurveyAsync Jr identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset setIdentity clearIdentity get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException captureLog startExceptionAutocapture stopExceptionAutocapture loadToolbar get_property getSessionProperty Wr Hr createPersonProfile setInternalOrTestUser Gr Fr tn opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing get_explicit_consent_status is_capturing clear_opt_in_out_capturing $r debug ki Yr getPageViewId captureTraceFeedback captureTraceMetric Rr".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
@@ -221,6 +277,83 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem}
   </div>
 </div>
 </div>
+
+<!-- PERSONA ROUTING -->
+<section class="sec" style="padding:3rem 0 2.5rem">
+  <div class="wrap">
+    <div class="persona-section-label">Get started</div>
+    <p class="persona-section-sub">Choose what applies to you.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+
+      <a href="/tools" style="text-decoration:none">
+        <div class="persona-card" style="border-color:rgba(59,123,248,0.35)">
+          <div class="persona-icon" style="background:rgba(59,123,248,0.12);color:#3B7BF8">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          </div>
+          <div class="persona-title">Website owner</div>
+          <div class="persona-desc">Make your site agent-readable in 2 minutes. No code required.</div>
+          <div class="persona-action" style="color:#3B7BF8">Generate agents.json →</div>
+        </div>
+      </a>
+
+      <a href="#install" onclick="setTimeout(()=>document.querySelectorAll('#install-tabs .tb')[1].click(),50)" style="text-decoration:none">
+        <div class="persona-card" style="border-color:rgba(74,222,128,0.3)">
+          <div class="persona-icon" style="background:rgba(74,222,128,0.1);color:#4ADE80">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <div class="persona-title">Python developer</div>
+          <div class="persona-desc">Build agents with LangChain, LlamaIndex, AutoGen, or CrewAI.</div>
+          <div class="persona-action" style="color:#4ADE80">pip install w2a →</div>
+        </div>
+      </a>
+
+      <a href="#install" onclick="setTimeout(()=>document.querySelectorAll('#install-tabs .tb')[2].click(),50)" style="text-decoration:none">
+        <div class="persona-card" style="border-color:rgba(252,211,77,0.3)">
+          <div class="persona-icon" style="background:rgba(252,211,77,0.1);color:#FCD34D">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div class="persona-title">JS / TS developer</div>
+          <div class="persona-desc">Build for Node.js, Cloudflare Workers, Vercel Edge, or the browser.</div>
+          <div class="persona-action" style="color:#FCD34D">npm install w2a-client →</div>
+        </div>
+      </a>
+
+      <a href="#install" onclick="setTimeout(()=>document.querySelectorAll('#install-tabs .tb')[3].click(),50)" style="text-decoration:none">
+        <div class="persona-card" style="border-color:rgba(248,113,113,0.3)">
+          <div class="persona-icon" style="background:rgba(248,113,113,0.1);color:#F87171">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+          </div>
+          <div class="persona-title">Claude / Cursor user</div>
+          <div class="persona-desc">Add W2A sites as tools to your AI assistant in one config line.</div>
+          <div class="persona-action" style="color:#F87171">npx w2a-mcp →</div>
+        </div>
+      </a>
+
+      <a href="/blog/agent-discovery-problem" style="text-decoration:none">
+        <div class="persona-card" style="border-color:rgba(161,161,170,0.2)">
+          <div class="persona-icon" style="background:rgba(161,161,170,0.08);color:#A1A1AA">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <div class="persona-title">Architect / CTO</div>
+          <div class="persona-desc">Understand the discovery problem and how W2A fits the agent stack.</div>
+          <div class="persona-action" style="color:#A1A1AA">Read the paper →</div>
+        </div>
+      </a>
+
+      <a href="https://github.com/Nijjwol23/w2a" target="_blank" style="text-decoration:none">
+        <div class="persona-card" style="border-color:rgba(161,161,170,0.2)">
+          <div class="persona-icon" style="background:rgba(161,161,170,0.08);color:#A1A1AA">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          </div>
+          <div class="persona-title">Contributor</div>
+          <div class="persona-desc">Apache 2.0. The spec, SDKs, and tools are all open for contribution.</div>
+          <div class="persona-action" style="color:#A1A1AA">View on GitHub →</div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
 
 <hr class="sep">
 
