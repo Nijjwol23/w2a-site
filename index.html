@@ -294,40 +294,99 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem}
   <div class="wrap">
     <div class="sec-h">
       <div class="lbl">Get started</div>
-      <h2>Up and running<br>in two minutes.</h2>
-      <p>Generate your <code style="font-family:var(--mono);font-size:14px;color:var(--accent)">agents.json</code> from the web tool. Drop the file in your site root. Done.</p>
+      <h2>Four paths.<br>Same result.</h2>
+      <p>Every website can be agent-ready in under two minutes. Every agent can read any W2A-enabled site in one line of code.</p>
     </div>
 
-    <div class="cb">
-      <div class="cb-hd">
-        <div class="cb-l">
-          <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-          <span class="fname">The fastest path — no code required</span>
-        </div>
-        <span class="cbadge">Live now</span>
-      </div>
-      <pre><span class="c"># 1. Go to the generator</span>
+    <div class="tabs" id="install-tabs">
+      <button class="tb on" onclick="itab(event,'no-code')">No code</button>
+      <button class="tb" onclick="itab(event,'python')">Python</button>
+      <button class="tb" onclick="itab(event,'javascript')">JavaScript</button>
+      <button class="tb" onclick="itab(event,'mcp')">MCP</button>
+    </div>
+
+    <div class="tab-panels">
+
+      <div class="pnl on" id="i-no-code">
+        <div class="cb"><div class="cb-hd"><div class="cb-l"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="fname">For website owners — no engineering required</span></div><span class="cbadge">Live now</span></div>
+        <pre><span class="c"># 1. Go to the generator</span>
 <span class="w">w2a-protocol.org/tools</span>
 
-<span class="c"># 2. Enter your site URL — auto-detects OpenAPI, Schema.org,
+<span class="c"># 2. Enter your URL — auto-detects OpenAPI, Schema.org,
 #    Open Graph, sitemaps, and HTML forms</span>
 
-<span class="c"># 3. Download your agents.json and place it at:</span>
+<span class="c"># 3. Download and place at:</span>
 <span class="w">/.well-known/agents.json</span>
 
 <span class="c"># Vercel / Next.js  →  public/.well-known/agents.json
 # WordPress         →  public_html/.well-known/agents.json
-# Any other host    →  root folder → .well-known/agents.json</span></pre>
-    </div>
-
-    <div style="margin-top:1.5rem;padding:1.25rem 1.5rem;background:var(--accent-bg);border:1px solid var(--accent-bd);border-radius:var(--rl)">
-      <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:.6rem">On the roadmap</div>
-      <div style="display:flex;gap:2rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:12px;color:var(--text3)">npx w2a@latest init</span>
-        <span style="font-family:var(--mono);font-size:12px;color:var(--text3)">&lt;script src="cdn.w2a-protocol.org/v1.js"&gt;</span>
-        <span style="font-family:var(--mono);font-size:12px;color:var(--text3)">_w2a CNAME edge.w2a-protocol.org</span>
+# Any other host    →  root folder → .well-known/</span></pre></div>
       </div>
-      <div style="font-size:12px;font-weight:300;color:var(--text3);margin-top:.6rem">CLI, script tag, and DNS installs are coming. <a href="https://github.com/Nijjwol23/w2a/discussions" target="_blank" style="color:var(--accent);text-decoration:none">Follow the repo</a> for updates.</div>
+
+      <div class="pnl" id="i-python">
+        <div class="cb"><div class="cb-hd"><div class="cb-l"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="fname">Python — LangChain, LlamaIndex, AutoGen, CrewAI</span></div><span class="cbadge">pip install w2a</span></div>
+        <pre><span class="c"># Install</span>
+<span class="w">pip install w2a</span>
+
+<span class="c"># Discover any W2A-enabled site</span>
+<span class="k">from</span> w2a <span class="k">import</span> discover
+
+site = <span class="k">await</span> discover(<span class="s">"yoursite.com"</span>)
+<span class="k">print</span>(site.name, <span class="s">f"— {len(site.skills)} skills"</span>)
+
+<span class="k">for</span> skill <span class="k">in</span> site.public_skills:
+    <span class="k">print</span>(skill.id, <span class="s">"—"</span>, skill.intent)
+
+<span class="c"># Call a skill directly</span>
+result = <span class="k">await</span> client.call(site, <span class="s">"search_products"</span>, q=<span class="s">"shoes"</span>)</pre></div>
+        <div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+          <a href="https://pypi.org/project/w2a/" target="_blank" style="font-family:var(--mono);font-size:11px;color:var(--text3);text-decoration:none;background:var(--bg3);border:1px solid var(--border2);padding:3px 10px;border-radius:4px">pypi.org/project/w2a</a>
+          <a href="https://github.com/Nijjwol23/w2a/tree/main/sdk/python" target="_blank" style="font-family:var(--mono);font-size:11px;color:var(--text3);text-decoration:none;background:var(--bg3);border:1px solid var(--border2);padding:3px 10px;border-radius:4px">SDK source</a>
+        </div>
+      </div>
+
+      <div class="pnl" id="i-javascript">
+        <div class="cb"><div class="cb-hd"><div class="cb-l"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="fname">TypeScript / JavaScript — Node.js, Edge, Browser</span></div><span class="cbadge">npm install w2a-client</span></div>
+        <pre><span class="c">// Install</span>
+<span class="w">npm install w2a-client</span>
+
+<span class="c">// Discover any W2A-enabled site</span>
+<span class="k">import</span> { discover } <span class="k">from</span> <span class="s">'w2a-client'</span>
+
+<span class="k">const</span> site = <span class="k">await</span> discover(<span class="s">'yoursite.com'</span>)
+console.log(<span class="s">`</span>${site.name}<span class="s"> — </span>${site.skills.length}<span class="s"> skills`</span>)
+
+<span class="c">// Find a skill by intent fragment</span>
+<span class="k">const</span> skill = site.findSkill(<span class="s">'search'</span>)
+
+<span class="c">// Call it</span>
+<span class="k">const</span> result = <span class="k">await</span> client.call(site, skill.id, { q: <span class="s">'shoes'</span> })</pre></div>
+        <div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+          <a href="https://www.npmjs.com/package/w2a-client" target="_blank" style="font-family:var(--mono);font-size:11px;color:var(--text3);text-decoration:none;background:var(--bg3);border:1px solid var(--border2);padding:3px 10px;border-radius:4px">npmjs.com/package/w2a-client</a>
+          <a href="https://github.com/Nijjwol23/w2a/tree/main/sdk/javascript" target="_blank" style="font-family:var(--mono);font-size:11px;color:var(--text3);text-decoration:none;background:var(--bg3);border:1px solid var(--border2);padding:3px 10px;border-radius:4px">SDK source</a>
+        </div>
+      </div>
+
+      <div class="pnl" id="i-mcp">
+        <div class="cb"><div class="cb-hd"><div class="cb-l"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="fname">MCP — Claude Desktop, Cursor, Cline, any MCP client</span></div><span class="cbadge">npx w2a-mcp</span></div>
+        <pre><span class="c">// Add to ~/.claude/claude_desktop_config.json</span>
+{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"w2a"</span>: {
+      <span class="k">"command"</span>: <span class="s">"npx"</span>,
+      <span class="k">"args"</span>: [<span class="s">"w2a-mcp"</span>, <span class="s">"--url"</span>, <span class="s">"https://yoursite.com"</span>]
+    }
+  }
+}
+
+<span class="c">// Every W2A skill becomes a Claude tool automatically.
+// No coding required.</span></pre></div>
+        <div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+          <a href="https://www.npmjs.com/package/w2a-mcp" target="_blank" style="font-family:var(--mono);font-size:11px;color:var(--text3);text-decoration:none;background:var(--bg3);border:1px solid var(--border2);padding:3px 10px;border-radius:4px">npmjs.com/package/w2a-mcp</a>
+          <a href="https://github.com/Nijjwol23/w2a/tree/main/sdk/mcp" target="_blank" style="font-family:var(--mono);font-size:11px;color:var(--text3);text-decoration:none;background:var(--bg3);border:1px solid var(--border2);padding:3px 10px;border-radius:4px">Source</a>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
