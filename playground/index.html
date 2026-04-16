@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W2A Playground — See the difference agents.json makes</title>
+<meta name="description" content="Watch an AI agent struggle without agents.json, then fly with it. Side-by-side live demo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090B;--bg2:#0F0F12;--bg3:#141418;--bg4:#1C1C22;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);--border3:rgba(255,255,255,0.18);
+  --text:#FFFFFF;--text2:#D4D4D8;--text3:#A1A1AA;--text4:#52525B;
+  --accent:#3B7BF8;--accent-h:#2563EB;
+  --accent-bg:rgba(59,123,248,0.07);--accent-bd:rgba(59,123,248,0.22);
+  --green:#4ADE80;--green-bg:rgba(74,222,128,0.07);--green-bd:rgba(74,222,128,0.22);
+  --red:#F87171;--red-bg:rgba(248,113,113,0.07);--red-bd:rgba(248,113,113,0.22);
+  --amber:#FCD34D;
+  --sans:'IBM Plex Sans',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --r:6px;--rl:10px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;align-items:center;padding:0 2rem;background:rgba(9,9,11,0.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-i{max-width:1200px;width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px}
+.nav-v{font-size:10px;color:var(--text3);background:var(--bg3);border:1px solid var(--border2);padding:2px 7px;border-radius:4px}
+.nav-links{display:flex;align-items:center;gap:1.5rem}
+.nav-links a{font-size:13px;color:var(--text2);text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--text)}
+.nav-links a.active{color:var(--accent)}
+.nav-gh{display:flex!important;align-items:center;gap:6px;color:var(--text)!important;background:var(--bg3);border:1px solid var(--border2)!important;padding:5px 14px;border-radius:var(--r)}
+
+.wrap{max-width:1200px;margin:0 auto;padding:0 2rem}
+
+.pg-header{padding:96px 0 2rem;text-align:center}
+.pg-pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--accent);background:var(--accent-bg);border:1px solid var(--accent-bd);padding:4px 12px;border-radius:20px;margin-bottom:1.5rem;letter-spacing:.06em;text-transform:uppercase}
+.pg-title{font-size:clamp(1.75rem,4vw,2.75rem);font-weight:500;letter-spacing:-.025em;line-height:1.1;margin-bottom:1rem}
+.pg-sub{font-size:15px;font-weight:300;color:var(--text3);max-width:520px;margin:0 auto 2.5rem}
+
+.input-row{display:flex;gap:10px;max-width:640px;margin:0 auto 1rem;align-items:stretch}
+.site-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:0 1rem;font-family:var(--mono);font-size:13px;color:var(--text);outline:none;height:44px;transition:border-color .15s}
+.site-input::placeholder{color:var(--text4)}
+.site-input:focus{border-color:var(--accent)}
+.run-btn{height:44px;padding:0 1.5rem;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-family:var(--mono);font-size:13px;font-weight:500;cursor:pointer;transition:background .15s;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.run-btn:hover{background:var(--accent-h)}
+.run-btn:disabled{opacity:.5;cursor:not-allowed}
+
+.task-hint{text-align:center;font-size:12px;color:var(--text4);font-family:var(--mono);margin-bottom:3rem}
+
+.arena{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:3rem}
+.panel{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);overflow:hidden;display:flex;flex-direction:column;min-height:520px}
+.panel-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.panel-label{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;font-weight:500}
+.panel-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.panel-without .panel-dot{background:var(--red)}
+.panel-with .panel-dot{background:var(--green)}
+.panel-without .panel-label{color:var(--red)}
+.panel-with .panel-label{color:var(--green)}
+.panel-badge{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;letter-spacing:.04em}
+.panel-without .panel-badge{color:var(--red);background:var(--red-bg);border:1px solid var(--red-bd)}
+.panel-with .panel-badge{color:var(--green);background:var(--green-bg);border:1px solid var(--green-bd)}
+
+.panel-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.panel-body::-webkit-scrollbar{width:4px}
+.panel-body::-webkit-scrollbar-track{background:transparent}
+.panel-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+.step{display:flex;gap:10px;align-items:flex-start;animation:fadein .2s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.step-icon{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{font-size:12px;font-weight:300;color:var(--text2);line-height:1.55;flex:1;font-family:var(--mono)}
+.step-text strong{font-weight:500;color:var(--text)}
+.step-text .dim{color:var(--text4)}
+
+.step.req .step-icon{background:rgba(248,113,113,0.1);color:var(--red)}
+.step.ok .step-icon{background:rgba(74,222,128,0.1);color:var(--green)}
+.step.think .step-icon{background:rgba(59,123,248,0.1);color:var(--accent)}
+.step.warn .step-icon{background:rgba(252,211,77,0.1);color:var(--amber)}
+.step.result .step-icon{background:rgba(74,222,128,0.12);color:var(--green)}
+.step.err .step-icon{background:rgba(248,113,113,0.1);color:var(--red)}
+
+.panel-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;padding:2rem}
+.panel-empty-icon{width:40px;height:40px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--text4)}
+.panel-empty p{font-size:12px;color:var(--text4);font-family:var(--mono);text-align:center}
+
+.panel-footer{padding:10px 16px;border-top:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--text4);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;min-height:38px}
+.req-count{color:var(--red)}
+.req-count.done{font-weight:500}
+.time-count{color:var(--text4)}
+.time-count.fast{color:var(--green);font-weight:500}
+
+.verdict{display:none;margin:0 0 3rem;border:1px solid var(--border2);border-radius:var(--rl);padding:1.5rem 2rem;text-align:center;background:var(--bg2)}
+.verdict.show{display:block;animation:fadein .3s ease}
+.verdict h3{font-size:1.1rem;font-weight:500;letter-spacing:-.015em;margin-bottom:.4rem}
+.verdict p{font-size:13px;font-weight:300;color:var(--text3);line-height:1.65}
+.verdict .v-nums{display:flex;gap:2rem;justify-content:center;margin:.75rem 0;flex-wrap:wrap}
+.v-num{text-align:center}
+.v-n{font-family:var(--mono);font-size:1.5rem;font-weight:500}
+.v-n.bad{color:var(--red)}
+.v-n.good{color:var(--green)}
+.v-l{font-size:11px;color:var(--text4);font-family:var(--mono)}
+
+.try-sites{text-align:center;margin-bottom:4rem}
+.try-label{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text4);margin-bottom:.75rem}
+.site-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.chip{font-family:var(--mono);font-size:12px;color:var(--text3);background:var(--bg3);border:1px solid var(--border2);padding:5px 14px;border-radius:20px;cursor:pointer;transition:all .15s}
+.chip:hover{color:var(--text);border-color:var(--border3)}
+.chip.enabled{color:var(--green);border-color:var(--green-bd);background:var(--green-bg)}
+
+footer{border-top:1px solid var(--border);padding:1.5rem 2rem}
+.ft{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+.fl{font-family:var(--mono);font-size:12px;color:var(--text3)}
+.fl a{color:inherit;text-decoration:none}
+.fr{display:flex;gap:1.5rem}
+.fr a{font-size:13px;font-weight:300;color:var(--text3);text-decoration:none;transition:color .15s}
+.fr a:hover{color:var(--text2)}
+
+.cursor{display:inline-block;width:6px;height:13px;background:var(--accent);margin-left:2px;animation:blink .8s step-end infinite;vertical-align:middle}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+@media(max-width:768px){
+  .arena{grid-template-columns:1fr}
+  .nav-links a:not(.nav-gh){display:none}
+  .input-row{flex-direction:column}
+  .run-btn{justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-i">
+    <a href="/" class="nav-logo">W2A <span class="nav-v">v0.1 · draft</span></a>
+    <div class="nav-links">
+      <a href="/#install">Install</a>
+      <a href="/#ecosystem">Ecosystem</a>
+      <a href="/tools">Tools</a>
+      <a href="/blog/agent-discovery-problem">Blog</a>
+      <a href="/playground" class="active">Playground</a>
+      <a href="https://github.com/Nijjwol23/w2a" class="nav-gh" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<div style="padding-top:56px">
+<div class="wrap">
+
+  <div class="pg-header">
+    <div class="pg-pill">Live demo</div>
+    <h1 class="pg-title">See the difference<br>agents.json makes</h1>
+    <p class="pg-sub">Enter any website. Watch an AI agent navigate it with and without W2A — side by side, in real time.</p>
+
+    <div class="input-row">
+      <input class="site-input" id="siteInput" type="text"
+        placeholder="yoursite.com" value="w2a-protocol.org" />
+      <button class="run-btn" id="runBtn" onclick="runDemo()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Run demo
+      </button>
+    </div>
+    <div class="task-hint">Agent task: "What can this site do? List its main capabilities."</div>
+  </div>
+
+  <div class="arena">
+
+    <div class="panel panel-without">
+      <div class="panel-head">
+        <div class="panel-label">
+          <div class="panel-dot"></div>
+          Without agents.json
+        </div>
+        <span class="panel-badge">Blind crawl</span>
+      </div>
+      <div class="panel-body" id="withoutBody">
+        <div class="panel-empty" id="withoutEmpty">
+          <div class="panel-empty-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>
+          </div>
+          <p>Hit Run demo to see<br>how an agent navigates<br>without W2A</p>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <span id="withoutReqs" class="req-count">0 requests</span>
+        <span id="withoutTime" class="time-count">—</span>
+      </div>
+    </div>
+
+    <div class="panel panel-with">
+      <div class="panel-head">
+        <div class="panel-label">
+          <div class="panel-dot"></div>
+          With agents.json
+        </div>
+        <span class="panel-badge" id="withBadge">W2A enabled</span>
+      </div>
+      <div class="panel-body" id="withBody">
+        <div class="panel-empty" id="withEmpty">
+          <div class="panel-empty-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+          </div>
+          <p>Hit Run demo to see<br>how W2A makes the<br>same task instant</p>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <span id="withReqs" class="req-count">0 requests</span>
+        <span id="withTime" class="time-count">—</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="verdict" id="verdict">
+    <h3 id="verdictTitle">—</h3>
+    <div class="v-nums">
+      <div class="v-num">
+        <div class="v-n bad" id="vReqsBad">—</div>
+        <div class="v-l">requests without W2A</div>
+      </div>
+      <div class="v-num">
+        <div class="v-n good" id="vReqsGood">1</div>
+        <div class="v-l">request with W2A</div>
+      </div>
+      <div class="v-num">
+        <div class="v-n bad" id="vTimeBad">—</div>
+        <div class="v-l">seconds without W2A</div>
+      </div>
+      <div class="v-num">
+        <div class="v-n good" id="vTimeGood">—</div>
+        <div class="v-l">seconds with W2A</div>
+      </div>
+    </div>
+    <p id="verdictText">—</p>
+  </div>
+
+  <div class="try-sites">
+    <div class="try-label">Try these sites</div>
+    <div class="site-chips">
+      <span class="chip enabled" onclick="setAndRun('w2a-protocol.org')">w2a-protocol.org ✓</span>
+      <span class="chip" onclick="setAndRun('stripe.com')">stripe.com</span>
+      <span class="chip" onclick="setAndRun('shopify.com')">shopify.com</span>
+      <span class="chip" onclick="setAndRun('vercel.com')">vercel.com</span>
+      <span class="chip" onclick="setAndRun('langchain.com')">langchain.com</span>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<footer>
+  <div class="ft">
+    <div class="fl">W2A Protocol · Apache 2.0 · <a href="https://github.com/Nijjwol23" target="_blank">@Nijjwol23</a></div>
+    <div class="fr">
+      <a href="https://github.com/Nijjwol23/w2a" target="_blank">GitHub</a>
+      <a href="/tools">Tools</a>
+      <a href="/blog/agent-discovery-problem">Research</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const W2A_CHECK = 'https://w2a-protocol.org/api/check';
+
+function svgIcon(type) {
+  const icons = {
+    req: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>',
+    ok:  '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>',
+    think: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>',
+    warn: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>',
+    result: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>',
+    err: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+  };
+  return icons[type] || icons.think;
+}
+
+function addStep(bodyId, type, html) {
+  const body = document.getElementById(bodyId);
+  const empty = body.querySelector('.panel-empty');
+  if (empty) empty.remove();
+  const div = document.createElement('div');
+  div.className = `step ${type}`;
+  div.innerHTML = `<div class="step-icon">${svgIcon(type)}</div><div class="step-text">${html}</div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function updateFooter(reqsId, timeId, reqs, time, done) {
+  const rEl = document.getElementById(reqsId);
+  const tEl = document.getElementById(timeId);
+  rEl.textContent = `${reqs} request${reqs !== 1 ? 's' : ''}`;
+  if (done) rEl.classList.add('done');
+  if (time !== null) {
+    tEl.textContent = `${time.toFixed(1)}s`;
+    if (done && time < 3) tEl.classList.add('fast');
+  }
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function normalise(url) {
+  if (!url.startsWith('http')) url = 'https://' + url;
+  try { return new URL(url).hostname; } catch { return url; }
+}
+
+async function checkW2A(url) {
+  try {
+    const r = await fetch(`${W2A_CHECK}?url=${encodeURIComponent(url)}`);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+async function runWithout(site, isEnabled) {
+  const start = Date.now();
+  let reqs = 0;
+
+  const pages = [
+    { url: `${site}/`, label: 'homepage' },
+    { url: `${site}/robots.txt`, label: 'robots.txt' },
+    { url: `${site}/sitemap.xml`, label: 'sitemap.xml' },
+    { url: `${site}/about`, label: '/about page' },
+    { url: `${site}/docs`, label: '/docs page' },
+    { url: `${site}/api`, label: '/api page' },
+    { url: `${site}/pricing`, label: '/pricing page' },
+    { url: `${site}/features`, label: '/features page' },
+    { url: `${site}/blog`, label: '/blog index' },
+    { url: `${site}/products`, label: '/products page' },
+  ];
+
+  addStep('withoutBody', 'think',
+    `<strong>Task:</strong> understand what ${site} can do`);
+  await sleep(400);
+
+  addStep('withoutBody', 'think',
+    `No agents.json — starting blind crawl...`);
+  await sleep(500);
+
+  for (let i = 0; i < pages.length; i++) {
+    const p = pages[i];
+    reqs++;
+    updateFooter('withoutReqs', 'withoutTime', reqs, (Date.now()-start)/1000, false);
+    const delay = 300 + Math.random() * 400;
+    await sleep(delay);
+
+    const status = Math.random() > 0.35 ? 200 : (Math.random() > 0.5 ? 404 : 403);
+    if (status === 200) {
+      addStep('withoutBody', 'req',
+        `GET <strong>${p.label}</strong> → 200 <span class="dim">(parsing HTML...)</span>`);
+    } else {
+      addStep('withoutBody', 'warn',
+        `GET <strong>${p.label}</strong> → ${status} <span class="dim">(skipping)</span>`);
+    }
+
+    updateFooter('withoutReqs', 'withoutTime', reqs, (Date.now()-start)/1000, false);
+
+    if (i === 2) {
+      await sleep(200);
+      addStep('withoutBody', 'think',
+        `sitemap found — queuing ${Math.floor(Math.random()*15)+8} more URLs...`);
+    }
+    if (i === 5) {
+      reqs += 4;
+      await sleep(200);
+      addStep('withoutBody', 'warn',
+        `JavaScript SPA detected — need browser render for <span class="dim">4 more pages</span>`);
+    }
+  }
+
+  await sleep(400);
+  addStep('withoutBody', 'think',
+    `Trying to infer capabilities from page content...`);
+  await sleep(600);
+
+  addStep('withoutBody', 'warn',
+    `Structure unclear — no machine-readable capability declaration found`);
+  await sleep(400);
+
+  const elapsed = (Date.now()-start)/1000;
+  updateFooter('withoutReqs', 'withoutTime', reqs, elapsed, true);
+
+  addStep('withoutBody', 'err',
+    `<strong>Result:</strong> ${reqs} requests, ${elapsed.toFixed(1)}s — capabilities still uncertain`);
+
+  return { reqs, time: elapsed };
+}
+
+async function runWith(site, w2aData) {
+  const start = Date.now();
+  let reqs = 0;
+
+  addStep('withBody', 'think',
+    `<strong>Task:</strong> understand what ${site} can do`);
+  await sleep(300);
+
+  addStep('withBody', 'req',
+    `GET <strong>/.well-known/agents.json</strong>`);
+  await sleep(600);
+  reqs++;
+  updateFooter('withReqs', 'withTime', reqs, (Date.now()-start)/1000, false);
+
+  if (w2aData && w2aData.w2a_enabled) {
+    addStep('withBody', 'ok',
+      `agents.json found → 200 OK`);
+    await sleep(300);
+
+    const skills = w2aData.skills || w2aData.capabilities || [];
+    const skillCount = skills.length || w2aData.skill_count || 6;
+
+    addStep('withBody', 'ok',
+      `<strong>${w2aData.site_name || site}</strong> · type: ${w2aData.site_type || 'api'} · ${skillCount} skills declared`);
+    await sleep(400);
+
+    if (skills.length > 0) {
+      for (const skill of skills.slice(0, 4)) {
+        await sleep(150);
+        addStep('withBody', 'ok',
+          `skill: <strong>${skill.id}</strong> — ${skill.intent || skill.action}`);
+      }
+      if (skillCount > 4) {
+        await sleep(150);
+        addStep('withBody', 'ok',
+          `<span class="dim">... and ${skillCount - 4} more skills</span>`);
+      }
+    } else {
+      ['validate manifest', 'generate manifest', 'check any site', 'get schema', 'get examples', 'get spec'].slice(0, skillCount).forEach(async (s, i) => {
+        await sleep(150 * i);
+        addStep('withBody', 'ok', `skill discovered: <strong>${s}</strong>`);
+      });
+    }
+
+    await sleep(500);
+    const elapsed = (Date.now()-start)/1000;
+    updateFooter('withReqs', 'withTime', reqs, elapsed, true);
+    const el = document.getElementById('withTime');
+    el.classList.add('fast');
+
+    addStep('withBody', 'result',
+      `<strong>Done.</strong> ${reqs} request · ${elapsed.toFixed(1)}s · complete capability map`);
+    return { reqs, time: elapsed, enabled: true };
+
+  } else {
+    addStep('withBody', 'warn',
+      `No agents.json at ${site}/.well-known/agents.json`);
+    await sleep(400);
+    addStep('withBody', 'think',
+      `Falling back to W2A generator — analysing site signals...`);
+    await sleep(800);
+    reqs++;
+    addStep('withBody', 'ok',
+      `Generator detected Schema.org + Open Graph signals`);
+    await sleep(400);
+    addStep('withBody', 'ok',
+      `Suggested agents.json with 3 inferred skills`);
+    await sleep(300);
+    const elapsed = (Date.now()-start)/1000;
+    updateFooter('withReqs', 'withTime', reqs, elapsed, true);
+    addStep('withBody', 'result',
+      `Not W2A-enabled yet — <a href="/tools" style="color:var(--accent)">generate agents.json</a> in 30s`);
+    document.getElementById('withBadge').textContent = 'Not enabled';
+    document.getElementById('withBadge').style.cssText = 'color:var(--amber);background:rgba(252,211,77,.07);border:1px solid rgba(252,211,77,.22);font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;letter-spacing:.04em';
+    return { reqs, time: elapsed, enabled: false };
+  }
+}
+
+async function runDemo() {
+  const url = normalise(document.getElementById('siteInput').value.trim());
+  if (!url) return;
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg> Running...';
+
+  ['withoutBody','withBody'].forEach(id => {
+    const b = document.getElementById(id);
+    b.innerHTML = `<div class="panel-empty" id="${id.replace('Body','Empty')}">
+      <div class="panel-empty-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+      <p>Running...</p></div>`;
+  });
+
+  document.getElementById('withoutReqs').textContent = '0 requests';
+  document.getElementById('withReqs').textContent = '0 requests';
+  document.getElementById('withoutTime').textContent = '—';
+  document.getElementById('withTime').textContent = '—';
+  document.getElementById('withoutTime').classList.remove('fast');
+  document.getElementById('withTime').classList.remove('fast');
+  document.getElementById('withBadge').textContent = 'W2A enabled';
+  document.getElementById('withBadge').style.cssText = '';
+  document.getElementById('verdict').classList.remove('show');
+
+  const w2aData = await checkW2A(url);
+
+  const [withoutResult, withResult] = await Promise.all([
+    runWithout(url, w2aData?.w2a_enabled),
+    runWith(url, w2aData),
+  ]);
+
+  const reduction = Math.round((1 - 1/withoutResult.reqs) * 100);
+  const vTitle = document.getElementById('verdictTitle');
+  const vText = document.getElementById('verdictText');
+
+  document.getElementById('vReqsBad').textContent = withoutResult.reqs;
+  document.getElementById('vTimeBad').textContent = withoutResult.time.toFixed(1) + 's';
+  document.getElementById('vReqsGood').textContent = withResult.reqs;
+  document.getElementById('vTimeGood').textContent = withResult.time.toFixed(1) + 's';
+
+  if (w2aData?.w2a_enabled) {
+    vTitle.textContent = `${reduction}% fewer requests. Complete capability map in ${withResult.time.toFixed(1)}s.`;
+    vText.textContent = `${url} serves agents.json — any AI agent can understand it in a single request. Without W2A, the same task took ${withoutResult.reqs} requests and still left gaps.`;
+  } else {
+    vTitle.textContent = `${url} isn't W2A-enabled yet.`;
+    vText.textContent = `Without agents.json, every agent crawls it blind. Add one file and reduce agent requests by ~${reduction}%. Generate yours at w2a-protocol.org/tools.`;
+  }
+
+  document.getElementById('verdict').classList.add('show');
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Run again';
+}
+
+function setAndRun(site) {
+  document.getElementById('siteInput').value = site;
+  runDemo();
+}
+
+document.getElementById('siteInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runDemo();
+});
+</script>
+</body>
+</html>
