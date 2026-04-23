@@ -1,13 +1,40 @@
-const SITE_TYPES = ['ecommerce','blog','saas','marketplace','media','directory','api','other'];
+const SITE_TYPES = ['ecommerce','blog','content','saas','marketplace','media','directory','api','other'];
 
+// Signals weighted by specificity. Strong signals count 2x, weak signals 1x.
+// This prevents marketing copy mentioning 'shop' or 'product' from misclassifying a content site.
 const TYPE_SIGNALS = {
-  ecommerce:   ['product','shop','store','cart','checkout','buy','price','catalog','inventory','order'],
-  blog:        ['article','post','blog','author','category','tag','publish','editorial','news','read'],
-  saas:        ['dashboard','analytics','report','integration','workspace','account','billing','api','platform'],
-  marketplace: ['listing','seller','vendor','bid','auction','offer','commission','marketplace'],
-  media:       ['video','audio','podcast','stream','watch','episode','channel','subscribe'],
-  directory:   ['listing','review','rating','business','location','find','search','directory'],
-  api:         ['api','endpoint','developer','docs','sdk','token','rate-limit','swagger','openapi']
+  ecommerce:   {
+    strong: ['add to cart','add-to-cart','shopping cart','checkout','buy now','cart/items','quantity','sku'],
+    weak:   ['product','shop','store','cart','buy','price','catalog','inventory','order']
+  },
+  blog:        {
+    strong: ['blogposting','datepublished','author','byline'],
+    weak:   ['article','post','blog','category','tag','publish','editorial','read']
+  },
+  content:     {
+    strong: ['tutorial','documentation','guide','glossary','knowledge base','wiki','docs/','/articles','/tutorials','/guides','/posts','/topics'],
+    weak:   ['learn','course','chapter','section','reference','manual','handbook','news','articles','community']
+  },
+  saas:        {
+    strong: ['dashboard','workspace','billing','subscribe now','free trial','sign up'],
+    weak:   ['analytics','report','integration','account','platform']
+  },
+  marketplace: {
+    strong: ['seller','vendor','bid','auction','marketplace','listing fee'],
+    weak:   ['listing','offer','commission']
+  },
+  media:       {
+    strong: ['watch now','episode','podcast','stream','channel','season'],
+    weak:   ['video','audio','watch','subscribe']
+  },
+  directory:   {
+    strong: ['business listing','directory','find a','locate','near me'],
+    weak:   ['listing','review','rating','business','location']
+  },
+  api:         {
+    strong: ['openapi','swagger','api reference','api docs','authentication','endpoint','rate limit'],
+    weak:   ['api','developer','sdk','token']
+  }
 };
 
 // Common OpenAPI/Swagger spec locations to probe
@@ -28,14 +55,38 @@ const OPENAPI_PATHS = [
 ];
 
 function detectSiteType(html, url, declared) {
+  // User-declared type always wins
   if (declared && SITE_TYPES.includes(declared)) return declared;
-  const text = (html + url).toLowerCase();
-  let best = 'other', bestScore = 0;
+  
+  const text = (html + ' ' + url).toLowerCase();
+  const scores = {};
+  
   for (const [type, signals] of Object.entries(TYPE_SIGNALS)) {
-    const score = signals.filter(s => text.includes(s)).length;
+    let score = 0;
+    // Strong signals count 3x, weak signals 1x
+    signals.strong.forEach(s => {
+      if (text.includes(s)) score += 3;
+    });
+    signals.weak.forEach(s => {
+      if (text.includes(s)) score += 1;
+    });
+    scores[type] = score;
+  }
+  
+  // Find the winner
+  let best = 'other', bestScore = 0;
+  for (const [type, score] of Object.entries(scores)) {
     if (score > bestScore) { bestScore = score; best = type; }
   }
-  // Require score >= 3 to avoid false positives from marketing copy
+  
+  // Ecommerce requires very strong signals — prevents misclassification
+  // when a site just mentions 'shop' or 'product' in marketing copy
+  if (best === 'ecommerce' && bestScore < 6) {
+    // Check if content signals are competitive
+    if (scores.content >= bestScore * 0.7) return 'content';
+    if (scores.blog >= bestScore * 0.7) return 'blog';
+  }
+  
   return bestScore >= 3 ? best : 'other';
 }
 
@@ -230,11 +281,13 @@ function buildSkillsFromSignals({ siteType, jsonLd, og, forms, pathPatterns }) {
 
   const searchAction = siteType === 'ecommerce' ? 'GET /api/search' :
                        siteType === 'blog'      ? 'GET /api/posts'  :
+                       siteType === 'content'   ? 'GET /api/search' :
                        siteType === 'saas'      ? 'GET /api/data'   : 'GET /api/search';
-  const searchIntent = siteType === 'ecommerce' ? 'search for products by keyword or category' :
-                       siteType === 'blog'      ? 'search articles by topic or keyword'        :
-                       siteType === 'saas'      ? 'search or retrieve data'                    :
-                                                  'search the site';
+  const searchIntent = siteType === 'ecommerce' ? 'Search for products by keyword or category' :
+                       siteType === 'blog'      ? 'Search articles by topic or keyword'        :
+                       siteType === 'content'   ? 'Search across articles, tutorials, and tools' :
+                       siteType === 'saas'      ? 'Search or retrieve data'                    :
+                                                  'Search the site';
   skills.push({
     id: 'search', intent: searchIntent, action: searchAction,
     input: { q: 'string', limit: 'int?' },
@@ -254,7 +307,47 @@ function buildSkillsFromSignals({ siteType, jsonLd, og, forms, pathPatterns }) {
   if (siteType === 'blog') {
     const hasArticle = jsonLd.some(j => j['@type'] === 'Article' || j['@type'] === 'BlogPosting');
     if (hasArticle) signals.push('Schema.org Article detected');
-    skills.push({ id: 'get_article', intent: 'read the full content of an article', action: 'GET /api/posts/:slug', input: { slug: 'string' }, output: { title: 'string', content: 'string', author: 'string', published_at: 'string' }, auth: 'none' });
+    skills.push({ id: 'get_article', intent: 'Read the full content of an article', action: 'GET /api/posts/:slug', input: { slug: 'string' }, output: { title: 'string', content: 'string', author: 'string', published_at: 'string' }, auth: 'none' });
+  }
+
+  if (siteType === 'content') {
+    const hasArticle = jsonLd.some(j => j['@type'] === 'Article' || j['@type'] === 'BlogPosting' || j['@type'] === 'TechArticle');
+    if (hasArticle) signals.push('Schema.org Article detected');
+    
+    // Content sites typically have: articles, tutorials/guides, topics, tags, and sometimes tools
+    skills.push({
+      id: 'list_articles',
+      intent: 'Browse articles, tutorials, and guides',
+      action: 'GET /api/articles',
+      input: { category: 'string?', tag: 'string?', limit: 'int?' },
+      output: { articles: 'object[]', total: 'int' },
+      auth: 'none'
+    });
+    skills.push({
+      id: 'get_article',
+      intent: 'Get full content of a specific article',
+      action: 'GET /api/articles/:slug',
+      input: { slug: 'string' },
+      output: { title: 'string', content: 'string', author: 'string', published_at: 'string', tags: 'string[]' },
+      auth: 'none'
+    });
+    skills.push({
+      id: 'list_topics',
+      intent: 'Browse topic collections that group related content',
+      action: 'GET /api/topics',
+      input: {},
+      output: { topics: 'object[]' },
+      auth: 'none'
+    });
+    skills.push({
+      id: 'list_tags',
+      intent: 'Browse all tags used to classify content',
+      action: 'GET /api/tags',
+      input: {},
+      output: { tags: 'object[]' },
+      auth: 'none'
+    });
+    signals.push('Content site skills template applied');
   }
 
   forms.slice(0, 2).forEach(form => {
@@ -443,12 +536,17 @@ export default async function handler(req, res) {
   // Low signal detection
   const isLowSignal = !openApiFound && jsonLd.length === 0 && forms.length === 0 && pathPatterns.length === 0;
 
+  // Detect language from html lang attribute, then fall back to og:locale, then 'en'
+  const htmlLangMatch = html.match(/<html[^>]+lang=["']([a-z\-]{2,7})["']/i);
+  const detectedLang = htmlLangMatch ? htmlLangMatch[1].split('-')[0].toLowerCase() :
+                       og['locale']?.split('_')[0]?.toLowerCase() || 'en';
+
   const manifest = {
     w2a: '1.0',
     site: {
       name: siteName,
       type: siteType,
-      language: og['locale']?.split('_')[0] || 'en',
+      language: detectedLang,
       ...(og['description'] && { description: og['description'] })
     },
     skills,

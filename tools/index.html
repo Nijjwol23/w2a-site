@@ -115,7 +115,7 @@ pre.result-code{padding:1.25rem 1.5rem;font-family:var(--mono);font-size:12.5px;
 
 .sep{border:none;border-top:1px solid var(--border);margin:2.5rem 0}
 
-.site-type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.site-type-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .type-btn{font-family:var(--mono);font-size:12px;padding:8px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .15s;text-align:center}
 .type-btn:hover{border-color:var(--border3);color:var(--text)}
 .type-btn.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent-bd)}
@@ -136,13 +136,13 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem;margin-top:5rem}
 .fr a:hover{color:var(--text2)}
 
 @media(max-width:600px){
-  .site-type-grid{grid-template-columns:repeat(2,1fr)}
+  .site-type-grid{grid-template-columns:repeat(3,1fr)}
   .nav-links a:not(.nav-gh){display:none}
 }
 </style>
 <script>
   !function(t,e){var o,n,p,r;e.__SV||(window.posthog && window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init Dr qr Ci Br Zr Pr capture calculateEventProperties Ur register register_once register_for_session unregister unregister_for_session Xr getFeatureFlag getFeatureFlagPayload getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey displaySurvey cancelPendingSurvey canRenderSurvey canRenderSurveyAsync Jr identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset setIdentity clearIdentity get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException captureLog startExceptionAutocapture stopExceptionAutocapture loadToolbar get_property getSessionProperty Wr Hr createPersonProfile setInternalOrTestUser Gr Fr tn opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing get_explicit_consent_status is_capturing clear_opt_in_out_capturing $r debug ki Yr getPageViewId captureTraceFeedback captureTraceMetric Rr".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-  posthog.init('phc_AhBo2PYc7eZrSrkLeQGDqJ5XdWdnwRRWwgxZ3JT8DJNq', {
+  posthog.init('phc_xxxxxx', {
       api_host: 'https://us.i.posthog.com',
       defaults: '2026-01-30',
       person_profiles: 'identified_only',
@@ -228,7 +228,9 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2rem;margin-top:5rem}
     <div class="field">
       <label>Site type</label>
       <div class="site-type-grid" id="type-grid">
-        <button class="type-btn on" data-type="ecommerce" onclick="setType(this)">ecommerce</button>
+        <button class="type-btn on" data-type="" onclick="setType(this)">auto-detect</button>
+        <button class="type-btn" data-type="ecommerce" onclick="setType(this)">ecommerce</button>
+        <button class="type-btn" data-type="content" onclick="setType(this)">content</button>
         <button class="type-btn" data-type="blog" onclick="setType(this)">blog</button>
         <button class="type-btn" data-type="saas" onclick="setType(this)">saas</button>
         <button class="type-btn" data-type="marketplace" onclick="setType(this)">marketplace</button>
