@@ -94,6 +94,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;ali
 .req-count.done{font-weight:500}
 .time-count{color:var(--text4)}
 .time-count.fast{color:var(--green);font-weight:500}
+.token-count{color:var(--red);font-weight:400}
+.token-count.fast{color:var(--green);font-weight:500}
+.panel-footer{gap:1rem}
+.footer-stat{display:flex;flex-direction:column;align-items:center;line-height:1.2}
+.footer-stat-label{font-size:9px;color:var(--text4);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
 
 .verdict{display:none;margin:0 0 3rem;border:1px solid var(--border2);border-radius:var(--rl);padding:1.5rem 2rem;text-align:center;background:var(--bg2)}
 .verdict.show{display:block;animation:fadein .3s ease}
@@ -189,8 +194,9 @@ footer{border-top:1px solid var(--border);padding:1.5rem 2rem}
         </div>
       </div>
       <div class="panel-footer">
-        <span id="withoutReqs" class="req-count">0 requests</span>
-        <span id="withoutTime" class="time-count">—</span>
+        <div class="footer-stat"><span id="withoutReqs" class="req-count">0</span><span class="footer-stat-label">requests</span></div>
+        <div class="footer-stat"><span id="withoutTokens" class="token-count">0</span><span class="footer-stat-label">tokens</span></div>
+        <div class="footer-stat"><span id="withoutTime" class="time-count">—</span><span class="footer-stat-label">time</span></div>
       </div>
     </div>
 
@@ -211,11 +217,17 @@ footer{border-top:1px solid var(--border);padding:1.5rem 2rem}
         </div>
       </div>
       <div class="panel-footer">
-        <span id="withReqs" class="req-count">0 requests</span>
-        <span id="withTime" class="time-count">—</span>
+        <div class="footer-stat"><span id="withReqs" class="req-count">0</span><span class="footer-stat-label">requests</span></div>
+        <div class="footer-stat"><span id="withTokens" class="token-count">0</span><span class="footer-stat-label">tokens</span></div>
+        <div class="footer-stat"><span id="withTime" class="time-count">—</span><span class="footer-stat-label">time</span></div>
       </div>
     </div>
 
+  </div>
+
+  <div style="text-align:center;margin-bottom:2rem;font-family:var(--mono);font-size:11px;color:var(--text4);">
+    Token counts are estimates based on typical extracted-text size per page.
+    <br>Live results may vary — the goal is order-of-magnitude, not exact billing.
   </div>
 
   <div class="verdict" id="verdict">
@@ -228,6 +240,14 @@ footer{border-top:1px solid var(--border);padding:1.5rem 2rem}
       <div class="v-num">
         <div class="v-n good" id="vReqsGood">1</div>
         <div class="v-l">request with W2A</div>
+      </div>
+      <div class="v-num">
+        <div class="v-n bad" id="vTokensBad">—</div>
+        <div class="v-l">tokens processed without W2A</div>
+      </div>
+      <div class="v-num">
+        <div class="v-n good" id="vTokensGood">—</div>
+        <div class="v-l">tokens processed with W2A</div>
       </div>
       <div class="v-num">
         <div class="v-n bad" id="vTimeBad">—</div>
@@ -292,15 +312,34 @@ function addStep(bodyId, type, html) {
   body.scrollTop = body.scrollHeight;
 }
 
-function updateFooter(reqsId, timeId, reqs, time, done) {
+function updateFooter(reqsId, timeId, reqs, time, done, tokensId, tokens) {
   const rEl = document.getElementById(reqsId);
   const tEl = document.getElementById(timeId);
-  rEl.textContent = `${reqs} request${reqs !== 1 ? 's' : ''}`;
+  rEl.textContent = reqs;
   if (done) rEl.classList.add('done');
   if (time !== null) {
     tEl.textContent = `${time.toFixed(1)}s`;
     if (done && time < 3) tEl.classList.add('fast');
   }
+  if (tokensId) {
+    const tokEl = document.getElementById(tokensId);
+    if (tokEl) {
+      tokEl.textContent = tokens >= 1000 ? `${(tokens/1000).toFixed(1)}k` : tokens.toLocaleString();
+      if (done && tokens < 500) tokEl.classList.add('fast');
+    }
+  }
+}
+
+// Rough per-page token cost estimate for the "without" side.
+// Based on typical extracted-text sizes after HTML strip:
+//   - homepage / marketing page: ~1200 tokens
+//   - inner page (about/docs/etc.): ~800 tokens
+//   - error responses (404/403) still cost ~50 tokens to check
+// Not a claim of exact billing — a reasonable order-of-magnitude estimate.
+function estimatePageTokens(pageLabel, statusCode) {
+  if (statusCode !== 200) return 50;
+  if (pageLabel === 'homepage' || pageLabel.includes('features') || pageLabel.includes('pricing')) return 1200;
+  return 800;
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -321,6 +360,7 @@ async function checkW2A(url) {
 async function runWithout(site, isEnabled) {
   const start = Date.now();
   let reqs = 0;
+  let tokens = 0;
 
   const pages = [
     { url: `${site}/`, label: 'homepage' },
@@ -346,11 +386,11 @@ async function runWithout(site, isEnabled) {
   for (let i = 0; i < pages.length; i++) {
     const p = pages[i];
     reqs++;
-    updateFooter('withoutReqs', 'withoutTime', reqs, (Date.now()-start)/1000, false);
     const delay = 300 + Math.random() * 400;
     await sleep(delay);
 
     const status = Math.random() > 0.35 ? 200 : (Math.random() > 0.5 ? 404 : 403);
+    tokens += estimatePageTokens(p.label, status);
     if (status === 200) {
       addStep('withoutBody', 'req',
         `GET <strong>${p.label}</strong> → 200 <span class="dim">(parsing HTML...)</span>`);
@@ -359,7 +399,7 @@ async function runWithout(site, isEnabled) {
         `GET <strong>${p.label}</strong> → ${status} <span class="dim">(skipping)</span>`);
     }
 
-    updateFooter('withoutReqs', 'withoutTime', reqs, (Date.now()-start)/1000, false);
+    updateFooter('withoutReqs', 'withoutTime', reqs, (Date.now()-start)/1000, false, 'withoutTokens', tokens);
 
     if (i === 2) {
       await sleep(200);
@@ -368,6 +408,7 @@ async function runWithout(site, isEnabled) {
     }
     if (i === 5) {
       reqs += 4;
+      tokens += 4 * 1200; // extra JS-rendered pages are large
       await sleep(200);
       addStep('withoutBody', 'warn',
         `JavaScript SPA detected — need browser render for <span class="dim">4 more pages</span>`);
@@ -384,17 +425,19 @@ async function runWithout(site, isEnabled) {
   await sleep(400);
 
   const elapsed = (Date.now()-start)/1000;
-  updateFooter('withoutReqs', 'withoutTime', reqs, elapsed, true);
+  updateFooter('withoutReqs', 'withoutTime', reqs, elapsed, true, 'withoutTokens', tokens);
 
+  const tokenLabel = tokens >= 1000 ? `${(tokens/1000).toFixed(1)}k` : tokens.toLocaleString();
   addStep('withoutBody', 'err',
-    `<strong>Result:</strong> ${reqs} requests, ${elapsed.toFixed(1)}s — capabilities still uncertain`);
+    `<strong>Result:</strong> ${reqs} requests, ~${tokenLabel} tokens, ${elapsed.toFixed(1)}s — capabilities still uncertain`);
 
-  return { reqs, time: elapsed };
+  return { reqs, time: elapsed, tokens };
 }
 
 async function runWith(site, w2aData) {
   const start = Date.now();
   let reqs = 0;
+  let tokens = 0;
 
   addStep('withBody', 'think',
     `<strong>Task:</strong> understand what ${site} can do`);
@@ -404,7 +447,8 @@ async function runWith(site, w2aData) {
     `GET <strong>/.well-known/agents.json</strong>`);
   await sleep(600);
   reqs++;
-  updateFooter('withReqs', 'withTime', reqs, (Date.now()-start)/1000, false);
+  tokens = 600; // typical agents.json is small structured JSON
+  updateFooter('withReqs', 'withTime', reqs, (Date.now()-start)/1000, false, 'withTokens', tokens);
 
   if (w2aData && w2aData.w2a_enabled) {
     addStep('withBody', 'ok',
@@ -438,13 +482,13 @@ async function runWith(site, w2aData) {
 
     await sleep(500);
     const elapsed = (Date.now()-start)/1000;
-    updateFooter('withReqs', 'withTime', reqs, elapsed, true);
-    const el = document.getElementById('withTime');
-    el.classList.add('fast');
+    updateFooter('withReqs', 'withTime', reqs, elapsed, true, 'withTokens', tokens);
+    document.getElementById('withTime').classList.add('fast');
+    document.getElementById('withTokens').classList.add('fast');
 
     addStep('withBody', 'result',
-      `<strong>Done.</strong> ${reqs} request · ${elapsed.toFixed(1)}s · complete capability map`);
-    return { reqs, time: elapsed, enabled: true };
+      `<strong>Done.</strong> ${reqs} request · ~${tokens} tokens · ${elapsed.toFixed(1)}s · complete capability map`);
+    return { reqs, time: elapsed, enabled: true, tokens };
 
   } else {
     addStep('withBody', 'warn',
@@ -461,7 +505,8 @@ async function runWith(site, w2aData) {
       `Suggested agents.json with 3 inferred skills`);
     await sleep(300);
     const elapsed = (Date.now()-start)/1000;
-    updateFooter('withReqs', 'withTime', reqs, elapsed, true);
+    tokens = 400; // signal-detection pass
+    updateFooter('withReqs', 'withTime', reqs, elapsed, true, 'withTokens', tokens);
     addStep('withBody', 'result',
       `Not W2A-enabled yet — <a href="/tools" style="color:var(--accent)">generate agents.json</a> in 30s`);
     document.getElementById('withBadge').textContent = 'Not enabled';
@@ -485,12 +530,16 @@ async function runDemo() {
       <p>Running...</p></div>`;
   });
 
-  document.getElementById('withoutReqs').textContent = '0 requests';
-  document.getElementById('withReqs').textContent = '0 requests';
+  document.getElementById('withoutReqs').textContent = '0';
+  document.getElementById('withReqs').textContent = '0';
+  document.getElementById('withoutTokens').textContent = '0';
+  document.getElementById('withTokens').textContent = '0';
   document.getElementById('withoutTime').textContent = '—';
   document.getElementById('withTime').textContent = '—';
   document.getElementById('withoutTime').classList.remove('fast');
   document.getElementById('withTime').classList.remove('fast');
+  document.getElementById('withoutTokens').classList.remove('fast');
+  document.getElementById('withTokens').classList.remove('fast');
   document.getElementById('withBadge').textContent = 'W2A enabled';
   document.getElementById('withBadge').style.cssText = '';
   document.getElementById('verdict').classList.remove('show');
@@ -506,14 +555,19 @@ async function runDemo() {
   const vTitle = document.getElementById('verdictTitle');
   const vText = document.getElementById('verdictText');
 
+  const fmt = t => t >= 1000 ? `${(t/1000).toFixed(1)}k` : t.toLocaleString();
+  const tokenReduction = withResult.tokens ? Math.round((1 - withResult.tokens/withoutResult.tokens) * 100) : 0;
+
   document.getElementById('vReqsBad').textContent = withoutResult.reqs;
   document.getElementById('vTimeBad').textContent = withoutResult.time.toFixed(1) + 's';
   document.getElementById('vReqsGood').textContent = withResult.reqs;
   document.getElementById('vTimeGood').textContent = withResult.time.toFixed(1) + 's';
+  document.getElementById('vTokensBad').textContent = fmt(withoutResult.tokens);
+  document.getElementById('vTokensGood').textContent = fmt(withResult.tokens || 0);
 
   if (w2aData?.w2a_enabled) {
-    vTitle.textContent = `${reduction}% fewer requests. Complete capability map in ${withResult.time.toFixed(1)}s.`;
-    vText.textContent = `${url} serves agents.json — any AI agent can understand it in a single request. Without W2A, the same task took ${withoutResult.reqs} requests and still left gaps.`;
+    vTitle.textContent = `${reduction}% fewer requests, ${tokenReduction}% fewer tokens. Complete capability map in ${withResult.time.toFixed(1)}s.`;
+    vText.textContent = `${url} serves agents.json — any AI agent can understand it in a single request, processing ~${fmt(withResult.tokens)} tokens instead of ~${fmt(withoutResult.tokens)}. Same task, ${tokenReduction}% less work for the model.`;
   } else {
     vTitle.textContent = `${url} isn't W2A-enabled yet.`;
     vText.textContent = `Without agents.json, every agent crawls it blind. Add one file and reduce agent requests by ~${reduction}%. Generate yours at w2a-protocol.org/tools.`;
